@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:terminal_sismos_app/utils/DemoLocalizations.dart';
+import 'dart:async';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class MenuPage extends StatefulWidget {
   MenuPage({Key key, this.title}) : super(key: key);
@@ -33,6 +36,15 @@ class _MenuPageState extends State<MenuPage> {
     });
   }
 
+
+  @override
+  void initState() {
+    super.initState();
+    fetchPost().then((String res)=>{
+      print("PARSING INFO: "+ res)
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     Size devicesize= MediaQuery.of(context).size;
@@ -50,7 +62,7 @@ class _MenuPageState extends State<MenuPage> {
           Column(
             children: <Widget>[
               Expanded(
-                flex: 1,
+                flex: 2,
                 child: new Row(
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -106,7 +118,7 @@ class _MenuPageState extends State<MenuPage> {
                 ),
               ),
               Expanded(
-                flex: 2,
+                flex: 3,
                 child: new Row(
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -148,5 +160,17 @@ class _MenuPageState extends State<MenuPage> {
       ),
 
     );
+  }
+}
+
+Future<String> fetchPost() async {
+  final response = await http.get("https://sivswebapp.azurewebsites.net/api/actualizarfichatelefono");
+
+  if (response.statusCode == 200) {
+    // If the call to the server was successful, parse the JSON.
+    return response.body;
+  } else {
+    // If that call was not successful, throw an error.
+    throw Exception('Failed to load post');
   }
 }

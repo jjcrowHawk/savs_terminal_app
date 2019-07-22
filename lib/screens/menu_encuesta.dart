@@ -50,7 +50,7 @@ class _MenuEncuestaPageState extends State<MenuEncuestaPage> {
           Column(
             children: <Widget>[
               Expanded(
-                flex: 1,
+                flex: 2,
                 child: new Row(
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -106,7 +106,7 @@ class _MenuEncuestaPageState extends State<MenuEncuestaPage> {
                 ),
               ),
               Expanded(
-                flex: 2,
+                flex: 3,
                 child: new Row(
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
