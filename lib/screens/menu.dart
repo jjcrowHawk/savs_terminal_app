@@ -3,6 +3,7 @@ import 'package:terminal_sismos_app/utils/DemoLocalizations.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:terminal_sismos_app/db/models.dart';
 
 class MenuPage extends StatefulWidget {
   MenuPage({Key key, this.title}) : super(key: key);
@@ -40,8 +41,53 @@ class _MenuPageState extends State<MenuPage> {
   @override
   void initState() {
     super.initState();
-    fetchPost().then((String res)=>{
-      print("PARSING INFO: "+ res)
+    Seccion().select().delete();
+    fetchFichaUpdate().then((String res){
+      print(res.runtimeType);
+      List<dynamic> list= json.decode(res);
+      print("PARSING INFO: $list");
+      List<Seccion> secciones= new List<Seccion>();
+      list.forEach((obj){
+        print("sec: $obj ");
+        Seccion s= Seccion.fromMap(obj);
+        s.save().then((value){
+          print("saved: $value");
+          print("content of variable: ${obj['variable']}");
+          List<dynamic> json_variables= obj['variable'];
+          json_variables.forEach((obj_variable){
+            print("sec_id: ${obj_variable['seccion']}");
+            Variable v= Variable.fromMap(obj_variable);
+            v.save();
+          });
+        });
+        /*if(obj['variable']){
+          print("content of variable: ${obj['variable']}");
+          List<dynamic> json_variables= obj['variable'];
+          list.forEach((obj_variable){
+            Variable v= Variable.fromMap(obj_variable);
+
+            v.save();
+          });
+        }*/
+      });
+
+      Seccion().select().toList((secciones){
+        secciones.forEach((seccion){
+          print("Seccion: ${seccion.toMap()}");
+          seccion.getVariables((variableList){
+            print("Variable List: $variableList}");
+            variableList.forEach((variable) => print("Variable: ${variable.toMap()}"));
+          });
+        });
+      });
+
+      //list.map((obj) => Seccion.fromMap(obj)).toList();
+      /*secciones.forEach((seccion){
+        print(seccion.toMap());
+        seccion.getVariables((variableList){
+          variableList.forEach((variable) => print(variable.toMap()));
+        });
+      });*/
     });
   }
 
@@ -163,7 +209,7 @@ class _MenuPageState extends State<MenuPage> {
   }
 }
 
-Future<String> fetchPost() async {
+Future<String> fetchFichaUpdate() async {
   final response = await http.get("https://sivswebapp.azurewebsites.net/api/actualizarfichatelefono");
 
   if (response.statusCode == 200) {

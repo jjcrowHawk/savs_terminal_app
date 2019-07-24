@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:terminal_sismos_app/db/DBModel.dart';
+import 'package:terminal_sismos_app/db/models.dart';
+
 
 //Screens
 import 'package:terminal_sismos_app/screens/menu.dart';
@@ -12,12 +15,26 @@ import 'package:terminal_sismos_app/screens/fichas/nueva_ficha.dart';
 import 'package:terminal_sismos_app/screens/fichas/editar_ficha.dart';
 import 'package:terminal_sismos_app/screens/fichas/eliminar_ficha.dart';
 
+
 //Utils
 import 'package:terminal_sismos_app/utils/DemoLocalizations.dart';
 
 void main() {
   //debugPaintSizeEnabled = true;
-  runApp(MyApp());
+  DbModel().initializeDB((isReady){
+    if(isReady == true){
+      /*Seccion.withId(1, "General Information", true, false).save().then((value) => print(value));
+      //Seccion.withFields("Structural Information", true, false).save().then((value) => print(value));
+      Seccion().select().delete();
+      Seccion().select().toList((secciones){
+        secciones.forEach((Seccion s) => print(s.toMap()));
+        print("These secciones: $secciones");
+      });
+      */
+      runApp(MyApp());
+    }
+  });
+  //runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
