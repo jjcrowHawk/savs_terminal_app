@@ -2395,7 +2395,7 @@ class Seccion {
     this.nombre = o["nombre"];
     print("activo: ${o["activo"]} run: ${o["activo"].runtimeType}");
     this.activo = o["activo"] != null ? (o["activo"] == 1 || o["activo"] == true) : null;
-    this.isDeleted = o["isDeleted"] != null ? o["isDeleted"] == 1 : null;
+    this.isDeleted = !this.activo;//o["isDeleted"] != null ? o["isDeleted"] == 1 : null;
   }
 
   List<dynamic> toArgs() {
@@ -3151,7 +3151,7 @@ class Variable {
     this.obligatoria = o["obligatoria"] != null ? (o["obligatoria"] == 1 || o["obligatoria"] == true) : null;
     this.activo = o["activo"] != null ? (o["activo"] == 1 || o["activo"] == true) : null;
     this.SeccionId = o["seccion"];
-    this.isDeleted = o["isDeleted"] != null ? o["isDeleted"] == 1 : null;
+    this.isDeleted = !this.activo;//o["isDeleted"] != null ? o["isDeleted"] == 1 : null;
   }
 
   List<dynamic> toArgs() {
@@ -3932,9 +3932,9 @@ class Itemvariable {
     this.id = o["id"];
     this.nombre = o["nombre"];
     this.tipo = o["tipo"];
-    this.activo = o["activo"] != null ? o["activo"] == 1 : null;
-    this.VariableId = o["VariableId"];
-    this.isDeleted = o["isDeleted"] != null ? o["isDeleted"] == 1 : null;
+    this.activo = o["activo"] != null ? (o["activo"] == 1 || o["activo"] == true) : null;
+    this.VariableId = o["variable"];
+    this.isDeleted = !this.activo;//o["isDeleted"] != null ? o["isDeleted"] == 1 : null;
   }
 
   List<dynamic> toArgs() {
@@ -4722,9 +4722,9 @@ class Opcion {
   Opcion.fromMap(Map<String, dynamic> o) {
     this.id = o["id"];
     this.nombre = o["nombre"];
-    this.activo = o["activo"] != null ? o["activo"] == 1 : null;
-    this.ItemVariableId = o["ItemVariableId"];
-    this.isDeleted = o["isDeleted"] != null ? o["isDeleted"] == 1 : null;
+    this.activo = o["activo"] != null ? (o["activo"] == 1 || o["activo"] == true) : null;
+    this.ItemVariableId = o["item"];
+    this.isDeleted = !this.activo;//o["isDeleted"] != null ? o["isDeleted"] == 1 : null;
   }
 
   List<dynamic> toArgs() {

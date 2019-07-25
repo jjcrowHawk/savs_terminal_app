@@ -30,6 +30,8 @@ dependencies:
   sqflite: any
   path_provider: any
   intl: ^0.15.7
+  progress_dialog: ^1.1.0+1
+  rflutter_alert: ^1.0.3
 
 dev_dependencies:
   flutter_test:

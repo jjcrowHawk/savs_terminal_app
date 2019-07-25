@@ -4,6 +4,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:terminal_sismos_app/db/models.dart';
+import 'package:progress_dialog/progress_dialog.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 class MenuPage extends StatefulWidget {
   MenuPage({Key key, this.title}) : super(key: key);
@@ -24,7 +26,9 @@ class MenuPage extends StatefulWidget {
 }
 
 class _MenuPageState extends State<MenuPage> {
-  int _counter = 0;
+  ProgressDialog progressDialog;
+  Alert alertFail;
+
 
   void _incrementCounter() {
     setState(() {
@@ -33,7 +37,6 @@ class _MenuPageState extends State<MenuPage> {
       // so that the display can reflect the updated values. If we changed
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
-      _counter++;
     });
   }
 
@@ -41,53 +44,66 @@ class _MenuPageState extends State<MenuPage> {
   @override
   void initState() {
     super.initState();
-    Seccion().select().delete();
-    fetchFichaUpdate().then((String res){
-      print(res.runtimeType);
-      List<dynamic> list= json.decode(res);
-      print("PARSING INFO: $list");
-      List<Seccion> secciones= new List<Seccion>();
-      list.forEach((obj){
-        print("sec: $obj ");
-        Seccion s= Seccion.fromMap(obj);
-        s.save().then((value){
-          print("saved: $value");
-          print("content of variable: ${obj['variable']}");
-          List<dynamic> json_variables= obj['variable'];
-          json_variables.forEach((obj_variable){
-            print("sec_id: ${obj_variable['seccion']}");
-            Variable v= Variable.fromMap(obj_variable);
-            v.save();
-          });
-        });
-        /*if(obj['variable']){
-          print("content of variable: ${obj['variable']}");
-          List<dynamic> json_variables= obj['variable'];
-          list.forEach((obj_variable){
-            Variable v= Variable.fromMap(obj_variable);
+    alertFail= Alert(context: context,
+      title: "Error on Form Update",
+      desc: "There was an error while updating the form. It's mandatory to update the form"
+          "in order to add new important fields. Do you want to retry?",
+      buttons: [
+        DialogButton(
+          child: Text(
+            "Retry",
+            style: TextStyle(color: Colors.white, fontSize: 20),
+          ),
+          onPressed: (){
+            Navigator.pop(context);
+            updateFicha().then((value){
+              //Just querying database data for testing
+              printDatabase();
+              if(progressDialog.isShowing())
+                progressDialog.hide();
+            }).catchError((e){
+              print("$e");
+              if(progressDialog.isShowing())
+                progressDialog.hide();
 
-            v.save();
-          });
-        }*/
-      });
+              alertFail.show();
+            });
+            progressDialog.show();
+          },
+          color: Color.fromARGB(255, 48, 127, 226),
+        ),
+        DialogButton(
+            child: Text(
+              "Cancel",
+              style: TextStyle(color: Colors.white, fontSize: 20),
+            ),
+            onPressed: () => Navigator.pop(context),
+            color: Color.fromARGB(255, 255, 51, 51)),
+      ],);
 
-      Seccion().select().toList((secciones){
-        secciones.forEach((seccion){
-          print("Seccion: ${seccion.toMap()}");
-          seccion.getVariables((variableList){
-            print("Variable List: $variableList}");
-            variableList.forEach((variable) => print("Variable: ${variable.toMap()}"));
-          });
-        });
-      });
+    updateFicha().then((value){
+      //Just querying database data for testing
+      printDatabase();
+      if(progressDialog.isShowing())
+        progressDialog.hide();
+    },onError: (error){
+      if(progressDialog.isShowing())
+        progressDialog.hide();
 
-      //list.map((obj) => Seccion.fromMap(obj)).toList();
-      /*secciones.forEach((seccion){
-        print(seccion.toMap());
-        seccion.getVariables((variableList){
-          variableList.forEach((variable) => print(variable.toMap()));
-        });
-      });*/
+      alertFail.show();
+    }).catchError((e){
+      print("$e");
+      if(progressDialog.isShowing())
+        progressDialog.hide();
+
+      alertFail.show();
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_){
+      progressDialog=new ProgressDialog(context, ProgressDialogType.Normal);
+      progressDialog.setMessage("Updating Form fields");
+      progressDialog.show();
+
     });
   }
 
@@ -207,16 +223,95 @@ class _MenuPageState extends State<MenuPage> {
 
     );
   }
-}
 
-Future<String> fetchFichaUpdate() async {
-  final response = await http.get("https://sivswebapp.azurewebsites.net/api/actualizarfichatelefono");
 
-  if (response.statusCode == 200) {
-    // If the call to the server was successful, parse the JSON.
-    return response.body;
-  } else {
-    // If that call was not successful, throw an error.
-    throw Exception('Failed to load post');
+  Future<String> fetchFichaUpdate() async {
+    final response = await http.get("https://sivswebapp.azurewebsites.net/api/actualizarfichatelefono");
+
+    if (response.statusCode == 200) {
+      // If the call to the server was successful, parse the JSON.
+      return response.body;
+    } else {
+      // If that call was not successful, throw an error.
+      throw Exception('Failed to connect to server');
+    }
+  }
+
+
+  Future<void> updateFicha() async{
+    String json_string;
+    try {
+      json_string = await fetchFichaUpdate();
+
+      List<dynamic> list = json.decode(json_string);
+      print("PARSING INFO: $list");
+      list.forEach((obj) async {
+        //print("sec: $obj ");
+        Seccion s = Seccion.fromMap(obj);
+        int value = await s.save();
+        if (value <= 0){
+          throw Exception("Failed to parse object \'Seccion\' and save data in database");
+        }
+
+        List<dynamic> json_variables = obj['variable'];
+        json_variables.forEach((obj_variable) async {
+          //print("sec_id: ${obj_variable['seccion']}");
+          Variable variable = Variable.fromMap(obj_variable);
+          int value_v = await variable.save();
+          if (value_v <= 0) {
+            throw Exception(
+                "Failed to parse object \'Variable\' and save data in database");
+          }
+
+          List<dynamic> json_items = obj_variable['itemVariable'];
+          json_items.forEach((obj_item) async {
+            Itemvariable item = Itemvariable.fromMap(obj_item);
+            int value_i = await item.save();
+            if (value_i <= 0) {
+              throw Exception(
+                  "Failed to parse object \'ItemVariable\' and save data in database");
+            }
+            List<dynamic> json_options = obj_item['opcion'];
+            json_options.forEach((obj_option) async {
+              Opcion op = Opcion.fromMap(obj_option);
+              int value_op = await op.save();
+              if (value_op <= 0) {
+                throw Exception(
+                    "Failed to parse object \'Opcion\' and save data in database");
+              }
+            });
+          });
+        });
+      });
+    }catch(e){
+      print("EXCEPTION LAUNCHED!!!!!!!!!! $e");
+      rethrow;
+    }
+  }
+
+  void printDatabase(){
+    Seccion().select().toList((secciones){
+      secciones.forEach((seccion) async{
+        print("Seccion: ${seccion.toMap()}");
+        await seccion.getVariables((variableList){
+          print("Variable List: $variableList of ${seccion.nombre}");
+          variableList.forEach((variable){
+            print("Variable: ${variable.toMap()} from seccion ${seccion.nombre}");
+            variable.getItemvariables((itemvariableList){
+              print("ItemVariable List: $itemvariableList of ${variable.nombre}");
+              itemvariableList.forEach((item){
+                print("Item: ${item.toMap()} from variable ${variable.nombre}");
+                item.getOpcions((opcionList){
+                  print("Option List: $opcionList of ${item.nombre}");
+                  opcionList.forEach((opcion){
+                    print("Opcion: ${opcion.toMap()} from item ${item.nombre}");
+                  });
+                });
+              });
+            });
+          });
+        });
+      });
+    });
   }
 }
