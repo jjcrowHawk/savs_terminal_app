@@ -59,8 +59,7 @@ class _MenuPageState extends State<MenuPage> {
             updateFicha().then((value){
               //Just querying database data for testing
               printDatabase();
-              if(progressDialog.isShowing())
-                progressDialog.hide();
+              progressDialog.hide();
             }).catchError((e){
               print("$e");
               if(progressDialog.isShowing())
@@ -227,7 +226,7 @@ class _MenuPageState extends State<MenuPage> {
 
   Future<String> fetchFichaUpdate() async {
     final response = await http.get("https://sivswebapp.azurewebsites.net/api/actualizarfichatelefono");
-
+    http.Request r= new http.Request("GET", Uri.http("", ""));
     if (response.statusCode == 200) {
       // If the call to the server was successful, parse the JSON.
       return response.body;
