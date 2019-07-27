@@ -33,7 +33,7 @@ dependencies:
   progress_dialog: ^1.1.0+1
   rflutter_alert: ^1.0.3
   geolocator: 1.6.3
-  keyboard_avoider: ^0.1.2
+  image_picker: 0.4.12+1
 
 dev_dependencies:
   flutter_test:

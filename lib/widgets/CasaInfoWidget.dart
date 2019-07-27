@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:geolocator/geolocator.dart';
 
-class CasaInfoWidget extends StatefulWidget {
+class CasaInfoPage extends StatefulWidget {
   PageController parentController;
 
 
   @override
-  _CasaInfoWidgetState createState() => _CasaInfoWidgetState(this.parentController);
+  _CasaInfoPageState createState() => _CasaInfoPageState(this.parentController);
 
-  CasaInfoWidget(this.parentController);
+  CasaInfoPage(this.parentController);
 }
 
-class _CasaInfoWidgetState extends State<CasaInfoWidget>  with AutomaticKeepAliveClientMixin<CasaInfoWidget>{
+class _CasaInfoPageState extends State<CasaInfoPage>  with AutomaticKeepAliveClientMixin<CasaInfoPage>{
   List<Widget> widgets;
   PageController parentController;
   final addressController= TextEditingController();
@@ -27,7 +27,7 @@ class _CasaInfoWidgetState extends State<CasaInfoWidget>  with AutomaticKeepAliv
   List<String> labels=["Address","Date","Sector","Building ID","Elevation","Inspector","Building Age"];
 
 
-  _CasaInfoWidgetState(this.parentController);
+  _CasaInfoPageState(this.parentController);
 
   @override
   void initState() {
@@ -51,7 +51,7 @@ class _CasaInfoWidgetState extends State<CasaInfoWidget>  with AutomaticKeepAliv
     Widget title = Container(
       alignment: Alignment.center,
       padding: const EdgeInsets.only(left: 14.0, top: 14.0, bottom: 10.0),
-      child: Text("Form Information",
+      child: Text("Inspection Information",
         style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 24.0,
@@ -150,7 +150,7 @@ class _CasaInfoWidgetState extends State<CasaInfoWidget>  with AutomaticKeepAliv
       ),
     );
     print("QUERY: ${MediaQuery.of(context).viewInsets.bottom}");
-    Widget pad=Container(height: 300);
+    Widget pad=Container(height: MediaQuery.of(context).size.height/2);
 
     widgets.add(button);
     widgets.add(pad);

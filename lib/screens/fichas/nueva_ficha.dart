@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:terminal_sismos_app/db/models.dart';
+import 'package:terminal_sismos_app/widgets/AnexoPage.dart';
 import 'package:terminal_sismos_app/widgets/CasaInfoWidget.dart';
 import 'package:terminal_sismos_app/widgets/ItemWidget.dart';
 import 'package:terminal_sismos_app/widgets/SeccionWidget.dart';
 import 'package:page_indicator/page_indicator.dart';
 import 'package:terminal_sismos_app/widgets/VariableWidget.dart';
-import 'package:terminal_sismos_app/utils/keyboard_avoider.dart';
+
 
 
 
@@ -21,18 +23,24 @@ class _NuevaFichaPageState extends State<NuevaFichaPage> {
   List<Widget> secciones= new List<Widget>();
   List<Widget> tabs_titles= new List<Widget>();
   final PageController pageController= new PageController();
-  CasaInfoWidget infoPage;
+  CasaInfoPage infoPage;
+  AnexoPage anexoPage;
+  Alert alertContinue;
 
 
   @override
   void initState() {
     super.initState();
-    infoPage= new CasaInfoWidget(pageController);
+
+
+    infoPage= new CasaInfoPage(pageController);
+
     secciones.add(infoPage);
 
     Seccion().select().toList((listaSecciones) {
       List<Widget> pages=new List<Widget>();
       pages.add(infoPage);
+
       listaSecciones.forEach((seccion) {
         //Retrieving variables for each Seccion
         List<Widget> vWidgets = new List<Widget>();
@@ -50,6 +58,8 @@ class _NuevaFichaPageState extends State<NuevaFichaPage> {
         });
         pages.add(new SeccionWidget(seccion, vWidgets,this.pageController));
       });
+      anexoPage= AnexoPage(this.pageController);
+      pages.add(anexoPage);
       setState(() {
         secciones= pages;
       });
@@ -70,7 +80,9 @@ class _NuevaFichaPageState extends State<NuevaFichaPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WillPopScope(
+        onWillPop: _onWillPop,
+        child:Scaffold(
         //resizeToAvoidBottomInset: false,
         //resizeToAvoidBottomPadding: true,
         appBar: new AppBar(
@@ -90,10 +102,36 @@ class _NuevaFichaPageState extends State<NuevaFichaPage> {
           indicatorSelectorColor: Colors.lightBlue,
           shape: IndicatorShape.circle(size:12),
         )
-    );
+    ));
   }
 
+  Future<bool> _onWillPop(){
+    alertContinue= Alert(context: context,
+      title: "Warning",
+      desc: "Are you sure you want to leave? All progress made in this form will be lost.",
+      buttons: [
+        DialogButton(
+          child: Text(
+            "Accept",
+            style: TextStyle(color: Colors.white, fontSize: 20),
+          ),
+          onPressed: (){
+            Navigator.pop(context);
+            Navigator.pop(context);
+          },
+          color: Color.fromARGB(255, 48, 127, 226),
+        ),
+        DialogButton(
+            child: Text(
+              "Cancel",
+              style: TextStyle(color: Colors.white, fontSize: 20),
+            ),
+            onPressed: () => Navigator.pop(context),
+            color: Color.fromARGB(255, 255, 51, 51)),
+      ],);
 
+    return alertContinue.show() ?? false;
+  }
 }
 
 /*class NuevaFichaPage extends StatelessWidget {
