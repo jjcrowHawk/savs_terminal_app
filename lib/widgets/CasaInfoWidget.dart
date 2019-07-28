@@ -70,7 +70,7 @@ class _CasaInfoPageState extends State<CasaInfoPage>  with AutomaticKeepAliveCli
 
       if(labels[i] == "Address"){
         enabled= false;
-        Geolocator().getCurrentPosition(LocationAccuracy.high).then((position){
+        Geolocator().getCurrentPosition().then((position){
           print("Device pos: ${position.longitude} , ${position.latitude}, ${position.altitude}");
           addressController.text= "${position.longitude}, ${position.latitude}";
           elevationController.text= "${position.altitude}";

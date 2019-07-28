@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 class AnexoPage extends StatefulWidget {
   PageController parentController;
@@ -20,6 +21,7 @@ class _AnexoPageState extends State<AnexoPage> {
   List<Widget> widgets;
   PageController parentController;
   List<String> imagesUri;
+  Alert alertImgViewer;
 
   _AnexoPageState(this.parentController,this.imagesUri);
 
@@ -56,7 +58,7 @@ class _AnexoPageState extends State<AnexoPage> {
   Widget _buildImagePreview(int index){
     return Platform.isAndroid
         ? FutureBuilder<void>(
-      future: retrieveLostData(),
+      future: retrieveLostData(index),
       builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
         switch (snapshot.connectionState) {
           case ConnectionState.none:
@@ -81,12 +83,54 @@ class _AnexoPageState extends State<AnexoPage> {
   }
 
   Future _pickImageFromGallery(int index) async{
-      var image = await ImagePicker.pickImage(source: ImageSource.gallery);
+      var image = await ImagePicker.pickImage(source: ImageSource.gallery,maxWidth: MediaQuery
+          .of(context)
+          .size
+          .width / 2,
+      maxHeight: 200);
 
       setState(() {
+        print("THIS IMAGE URL: "+image.path);
         imagesUri[index]= image.path;
       });
   }
+
+  Future _pickImageFromCamera(int index) async{
+    var image = await ImagePicker.pickImage(source: ImageSource.camera,
+        maxWidth: MediaQuery.of(context).size.width / 2,
+        maxHeight: 200);
+
+    setState(() {
+      print("THIS IMAGE URL: "+image.path);
+      imagesUri[index]= image.path;
+    });
+  }
+
+  Future _viewImage(int index) async{
+    if(!imagesUri[index].contains("assets")) {
+      alertImgViewer = new Alert(
+          context: context,
+          title: "",
+          image: Image.file(
+              File(imagesUri[index]),
+            fit: BoxFit.fill,
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height * 0.75,
+          ),
+        buttons: [],
+      );
+      alertImgViewer.show();
+    }
+  }
+
+  Future  _deleteImage(int index) async{
+    if(!imagesUri[index].contains("assets")) {
+      setState(() {
+        imagesUri[index] = "assets/images/imgholder.jpg";
+      });
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -108,7 +152,7 @@ class _AnexoPageState extends State<AnexoPage> {
     widgets.add(title);
 
     for(int i=0;i<imagesUri.length;i++) {
-      String label= imagesUri[i].contains("asset") ? "no image" :imagesUri[i];
+      String label= imagesUri[i].contains("asset") ? "no image" : imagesUri[i].split("/")[imagesUri[i].split("/").length - 1];
 
       Widget anexWidget = Column(
         children: <Widget>[
@@ -121,24 +165,39 @@ class _AnexoPageState extends State<AnexoPage> {
                   Column(
                     children: <Widget>[
 
-                      _buildImagePreview(i),
-                      Text(
-                        label,
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14.0,
-                            //fontFamily: 'Arvo',
-                            color: Color.fromARGB(255, 48, 127, 226)
+                      GestureDetector(
+                          child: _buildImagePreview(i),
+                          onTap: ()=> _viewImage(i),
+                          onHorizontalDragEnd: (dragDetails)=> _deleteImage(i)
+                      ),
+                      Container(
+                        padding: EdgeInsets.only(top:10.0),
+                        width: MediaQuery.of(context).size.width/2,
+                        child: Text(
+                          label,
+                          textAlign: TextAlign.center,
+                          textWidthBasis: TextWidthBasis.parent,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2,
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12.0,
+                              //fontFamily: 'Arvo',
+                              color: Color.fromARGB(255, 48, 127, 226)
+                          ),
                         ),
                       ),
                     ],
                   ),
 
                   Column(children: <Widget>[
+
                     Container(
+                      width: MediaQuery.of(context).size.width * 0.40,
                       alignment: Alignment.centerLeft,
-                      padding: EdgeInsets.only(left: 20, bottom: 20),
+                      padding: EdgeInsets.only(left: 10, bottom: 20,right: 10),
                       child: RaisedButton(
+
                         onPressed: () {
                           _pickImageFromGallery(i);
                         },
@@ -149,11 +208,13 @@ class _AnexoPageState extends State<AnexoPage> {
                       ),
                     ),
                     Container(
+                      width: MediaQuery.of(context).size.width * 0.40,
                       alignment: Alignment.centerLeft,
-                      padding: EdgeInsets.only(left: 20, bottom: 10),
+                      padding: EdgeInsets.only(left: 10, bottom: 10,right:10),
                       child: RaisedButton(
-                        onPressed: () {
 
+                        onPressed: () {
+                          _pickImageFromCamera(i);
                         },
                         color: Colors.blue,
                         textColor: Colors.white,
@@ -197,14 +258,14 @@ class _AnexoPageState extends State<AnexoPage> {
     );
   }
 
-  Future<void> retrieveLostData() async {
+  Future<void> retrieveLostData(int index) async {
     final LostDataResponse response = await ImagePicker.retrieveLostData();
     if (response.isEmpty) {
       return;
     }
     if (response.file != null) {
       setState(() {
-          //_imageFile = response.file;
+          imagesUri[index] = response.file.path;
       });
     } else {
       //_retrieveDataError = response.exception.code;
