@@ -863,9 +863,9 @@ class Ficha {
     this.inspector = o["inspector"];
     this.fecha_inspeccion = o["fecha_inspeccion"];
     this.estado = o["estado"];
-    this.activo = o["activo"] != null ? o["activo"] == 1 : null;
+    this.activo = o["activo"] != null ? (o["activo"] == 1 || o["activo"] == true) : null;
     this.ViviendaId = o["ViviendaId"];
-    this.isDeleted = o["isDeleted"] != null ? o["isDeleted"] == 1 : null;
+    this.isDeleted = !this.activo;//o["isDeleted"] != null ? o["isDeleted"] == 1 : null;
   }
 
   List<dynamic> toArgs() {

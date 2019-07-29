@@ -4,17 +4,6 @@ import 'package:geolocator/geolocator.dart';
 
 class CasaInfoPage extends StatefulWidget {
   PageController parentController;
-
-
-  @override
-  _CasaInfoPageState createState() => _CasaInfoPageState(this.parentController);
-
-  CasaInfoPage(this.parentController);
-}
-
-class _CasaInfoPageState extends State<CasaInfoPage>  with AutomaticKeepAliveClientMixin<CasaInfoPage>{
-  List<Widget> widgets;
-  PageController parentController;
   final addressController= TextEditingController();
   final dateController= TextEditingController();
   final sectorController= TextEditingController();
@@ -22,24 +11,32 @@ class _CasaInfoPageState extends State<CasaInfoPage>  with AutomaticKeepAliveCli
   final elevationController= TextEditingController();
   final inspectorController= TextEditingController();
   final bageController= TextEditingController();
-
   List<TextEditingController> textControllers;
+
+
+
+  @override
+  _CasaInfoPageState createState() => _CasaInfoPageState();
+
+  CasaInfoPage(this.parentController);
+}
+
+class _CasaInfoPageState extends State<CasaInfoPage>  with AutomaticKeepAliveClientMixin<CasaInfoPage>{
+  List<Widget> widgets;
   List<String> labels=["Address","Date","Sector","Building ID","Elevation","Inspector","Building Age"];
 
-
-  _CasaInfoPageState(this.parentController);
 
   @override
   void initState() {
     super.initState();
-    textControllers=[addressController,dateController,sectorController,bidController,
-    elevationController,inspectorController,bageController];
+    widget.textControllers=[widget.addressController,widget.dateController,widget.sectorController,widget.bidController,
+      widget.elevationController,widget.inspectorController,widget.bageController];
   }
 
 
   @override
   void dispose() {
-    textControllers.forEach((controller) => {controller.dispose()});
+    widget.textControllers.forEach((controller) => {controller.dispose()});
     super.dispose();
   }
 
@@ -66,21 +63,22 @@ class _CasaInfoPageState extends State<CasaInfoPage>  with AutomaticKeepAliveCli
     for(int i=0;i<labels.length;i++){
       String textPlaced= "";
       bool enabled= true;
+      bool mandatory= (labels[i] == "Date" || labels[i] == "Sector" || labels[i] == "Building ID" || labels[i] == "Inspector");
       VoidCallback callback;
 
       if(labels[i] == "Address"){
         enabled= false;
         Geolocator().getCurrentPosition().then((position){
           print("Device pos: ${position.longitude} , ${position.latitude}, ${position.altitude}");
-          addressController.text= "${position.longitude}, ${position.latitude}";
-          elevationController.text= "${position.altitude}";
+          widget.addressController.text= "${position.longitude}, ${position.latitude}";
+          widget.elevationController.text= "${position.altitude}";
         });
       }
       if(labels[i] == "Date"){
-        textControllers[i].text= new DateFormat("dd-MM-yyyy").format(DateTime.now());
+        widget.textControllers[i].text= new DateFormat("dd-MM-yyyy").format(DateTime.now());
         callback= (){
           print("checking date");
-          var controller= textControllers[i];
+          var controller= widget.textControllers[i];
           if(labels[i] == "Date"){
             try{
               new DateFormat("dd-MM-yyyy").parse(controller.text);
@@ -93,16 +91,32 @@ class _CasaInfoPageState extends State<CasaInfoPage>  with AutomaticKeepAliveCli
 
       Widget w= SingleChildScrollView(child:Column(
         children: <Widget>[
-          Container(
-          alignment: Alignment.centerLeft,
-            padding: const EdgeInsets.only(left: 14.0, top: 14.0),
-            child: Text(labels[i],
-              style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18.0,
-                  color: Color.fromARGB(255, 48, 127, 226)
+          Row(
+            children: <Widget>[
+              Container(
+              alignment: Alignment.centerLeft,
+                padding: const EdgeInsets.only(left: 14.0, top: 14.0),
+                child: Text(labels[i],
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18.0,
+                      color: Color.fromARGB(255, 48, 127, 226)
+                  ),
+                ),
               ),
-            ),
+              mandatory ? Container(
+                alignment: Alignment.centerRight,
+                padding: const EdgeInsets.only(left: 14.0, top: 14.0, bottom: 10.0),
+                child: Text(" * ",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14.0,
+                    color: Colors.red,
+                    //decoration: TextDecoration.underline,
+                  ),
+                ),
+              ) : Container(),
+            ],
           ),
           Padding(
             padding: const EdgeInsets.only(bottom:40.0,top:5.0,right: 14.0,left: 14.0),
@@ -119,7 +133,7 @@ class _CasaInfoPageState extends State<CasaInfoPage>  with AutomaticKeepAliveCli
                 return null;
               },
               onEditingComplete: callback,
-              controller: textControllers[i],
+              controller: widget.textControllers[i],
               //maxLines: 1,
               decoration: InputDecoration(labelText: "Enter your answer",
                   /*border: OutlineInputBorder(
@@ -142,7 +156,7 @@ class _CasaInfoPageState extends State<CasaInfoPage>  with AutomaticKeepAliveCli
       child: RaisedButton(
         onPressed: (){
           print("going to next");
-          parentController.nextPage(duration: kTabScrollDuration, curve: Curves.easeIn);
+          widget.parentController.nextPage(duration: kTabScrollDuration, curve: Curves.easeIn);
         },
         color: Colors.blue,
         textColor: Colors.white,

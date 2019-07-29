@@ -14,16 +14,14 @@ class AnexoPage extends StatefulWidget {
   }
 
   @override
-  _AnexoPageState createState() => _AnexoPageState(this.parentController,this.imagesUri);
+  _AnexoPageState createState() => _AnexoPageState();
 }
 
 class _AnexoPageState extends State<AnexoPage> {
   List<Widget> widgets;
-  PageController parentController;
-  List<String> imagesUri;
   Alert alertImgViewer;
 
-  _AnexoPageState(this.parentController,this.imagesUri);
+  //_AnexoPageState(this.parentController,this.imagesUri);
 
 
   @override
@@ -33,9 +31,9 @@ class _AnexoPageState extends State<AnexoPage> {
 
 
   Widget _previewImage(int index){
-    if(imagesUri[index].contains("assets")){
+    if(widget.imagesUri[index].contains("assets")){
       return Image.asset(
-        imagesUri[index],
+        widget.imagesUri[index],
         height: 200,
         width: MediaQuery
             .of(context)
@@ -45,7 +43,7 @@ class _AnexoPageState extends State<AnexoPage> {
     }
     else{
       return Image.file(
-        File(imagesUri[index]),
+        File(widget.imagesUri[index]),
         height: 200,
         width: MediaQuery
             .of(context)
@@ -83,50 +81,51 @@ class _AnexoPageState extends State<AnexoPage> {
   }
 
   Future _pickImageFromGallery(int index) async{
-      var image = await ImagePicker.pickImage(source: ImageSource.gallery,maxWidth: MediaQuery
-          .of(context)
-          .size
-          .width / 2,
-      maxHeight: 200);
+      var image = await ImagePicker.pickImage(source: ImageSource.gallery);
 
       setState(() {
         print("THIS IMAGE URL: "+image.path);
-        imagesUri[index]= image.path;
+        widget.imagesUri[index]= image.path;
       });
   }
 
   Future _pickImageFromCamera(int index) async{
-    var image = await ImagePicker.pickImage(source: ImageSource.camera,
-        maxWidth: MediaQuery.of(context).size.width / 2,
-        maxHeight: 200);
+    var image = await ImagePicker.pickImage(source: ImageSource.camera,);
 
     setState(() {
       print("THIS IMAGE URL: "+image.path);
-      imagesUri[index]= image.path;
+      widget.imagesUri[index]= image.path;
     });
   }
 
   Future _viewImage(int index) async{
-    if(!imagesUri[index].contains("assets")) {
+    if(!widget.imagesUri[index].contains("assets")) {
       alertImgViewer = new Alert(
-          context: context,
-          title: "",
-          image: Image.file(
-              File(imagesUri[index]),
-            fit: BoxFit.fill,
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height * 0.75,
-          ),
+        context: context,
+        title: "",
+        image: Image.file(
+          File(widget.imagesUri[index]),
+          fit: BoxFit.fill,
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.height * 0.70,
+        ),
         buttons: [],
+        style: AlertStyle(
+          backgroundColor: Colors.transparent,
+          alertBorder: RoundedRectangleBorder(
+            side: BorderSide.none,
+            borderRadius: BorderRadius.zero
+          ),
+        )
       );
       alertImgViewer.show();
     }
   }
 
   Future  _deleteImage(int index) async{
-    if(!imagesUri[index].contains("assets")) {
+    if(!widget.imagesUri[index].contains("assets")) {
       setState(() {
-        imagesUri[index] = "assets/images/imgholder.jpg";
+        widget.imagesUri[index] = "assets/images/imgholder.jpg";
       });
     }
   }
@@ -151,8 +150,10 @@ class _AnexoPageState extends State<AnexoPage> {
 
     widgets.add(title);
 
-    for(int i=0;i<imagesUri.length;i++) {
-      String label= imagesUri[i].contains("asset") ? "no image" : imagesUri[i].split("/")[imagesUri[i].split("/").length - 1];
+    for(int i=0;i<widget.imagesUri.length;i++) {
+      String label= widget.imagesUri[i].contains("asset") ?
+      "no image" :
+      widget.imagesUri[i].split("/")[widget.imagesUri[i].split("/").length - 1];
 
       Widget anexWidget = Column(
         children: <Widget>[
@@ -239,7 +240,7 @@ class _AnexoPageState extends State<AnexoPage> {
       child: RaisedButton(
         onPressed: (){
           print("going to next");
-          parentController.previousPage(duration: kTabScrollDuration, curve: Curves.easeIn);
+          widget.parentController.previousPage(duration: kTabScrollDuration, curve: Curves.easeIn);
         },
         color: Colors.blue,
         textColor: Colors.white,
@@ -265,7 +266,7 @@ class _AnexoPageState extends State<AnexoPage> {
     }
     if (response.file != null) {
       setState(() {
-          imagesUri[index] = response.file.path;
+        widget.imagesUri[index] = response.file.path;
       });
     } else {
       //_retrieveDataError = response.exception.code;

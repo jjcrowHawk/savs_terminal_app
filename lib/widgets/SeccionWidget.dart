@@ -24,7 +24,20 @@ class SeccionWidget extends StatefulWidget {
       ),
     );
 
-    Widget button = //Expanded(
+    Widget mandatory_title= Container(
+      alignment: Alignment.centerRight,
+      padding: const EdgeInsets.only(right: 14.0, top: 14.0, bottom: 10.0),
+      child: Text(" * Mandatory Field",
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 14.0,
+          color: Colors.red,
+          //decoration: TextDecoration.underline,
+        ),
+      ),
+    );
+
+    Widget button =
     Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
     children:<Widget>[
@@ -59,7 +72,8 @@ class SeccionWidget extends StatefulWidget {
 
     Widget pad=Container(height: 300);
 
-    items.insert(0,sec_title);
+    items.add(sec_title);
+    items.add(mandatory_title);
     items.add(button);
     items.add(pad);
 
@@ -67,16 +81,13 @@ class SeccionWidget extends StatefulWidget {
   }
   
   @override
-  _SeccionWidgetState createState() => _SeccionWidgetState(this.seccion,this.variableWidgets,this.parentController);
+  _SeccionWidgetState createState() => _SeccionWidgetState();
 }
 
 class _SeccionWidgetState extends State<SeccionWidget> {
-  bool buttonAdded=false;
-  Seccion seccion;
-  List<Widget> items;
-  PageController parentController;
+  //List<Widget> items;
 
-  _SeccionWidgetState(this.seccion, this.items,this.parentController);
+  //_SeccionWidgetState(this.items);
 
 
   @override
@@ -86,33 +97,18 @@ class _SeccionWidgetState extends State<SeccionWidget> {
 
   @override
   Widget build(BuildContext context) {
-    if(items[1].runtimeType == Row){
-      items.add(items.removeAt(1));
-      items.add(items.removeAt(1));
+    if(widget.variableWidgets[2].runtimeType == Row){
+      widget.variableWidgets.add(widget.variableWidgets.removeAt(2));
+      widget.variableWidgets.add(widget.variableWidgets.removeAt(2));
     }
-    /*if(!buttonAdded) {
-      Widget button = //Expanded(
-      Align(
-        alignment: Alignment.bottomRight,
-        child: RaisedButton(
-          onPressed: null,
-          color: Color.fromARGB(255, 48, 127, 226),
-          textColor: Colors.white,
-          child: Text("Next"),
-          padding: EdgeInsets.only(right: 10,bottom: 20),
-        ),
-      ); //);
-      items.add(button);
-      buttonAdded= true;
-    }
-    else{
 
-    }*/
+    //Widget pad=Container(height: MediaQuery.of(context).size.height/2);
+    //widget.variableWidgets.add(pad);
 
     return ListView(
         scrollDirection: Axis.vertical,
         shrinkWrap: true,
-        children: items
+        children: widget.variableWidgets
     );
   }
 
