@@ -110,7 +110,7 @@ class Vivienda {
   /// returns Vivienda by ID if exist, otherwise returns null
   /// <param name="id">Primary Key Value</param>
   /// <returns>returns Vivienda if exist, otherwise returns null</returns>
-  getById(int id, VoidCallback vivienda(Vivienda o)) {
+  getById(int id, VoidCallback vivienda(Vivienda o)){
     Vivienda viviendaObj;
     var viviendaFuture = _mnVivienda.getById(id);
     viviendaFuture.then((data) {
@@ -811,10 +811,12 @@ class Ficha {
   // end FIELDS
 
 // RELATIONSHIPS
-  getVivienda(VoidCallback vivienda(Vivienda o)) {
+  getVivienda(VoidCallback vivienda(Vivienda o)){
     Vivienda().getById(ViviendaId, (obj) {
       vivienda(obj);
+      print("OBJECT GOTT");
     });
+    print("JOB DONE, LEFT");
   }
   // END RELATIONSHIPS
 
