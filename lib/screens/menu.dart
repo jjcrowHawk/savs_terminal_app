@@ -312,5 +312,7 @@ class _MenuPageState extends State<MenuPage> {
         });
       });
     });
+
+    Ficha().select().delete();
   }
 }

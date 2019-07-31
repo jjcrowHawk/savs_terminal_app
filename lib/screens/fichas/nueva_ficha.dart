@@ -273,7 +273,7 @@ class _NuevaFichaPageState extends State<NuevaFichaPage> {
         Anexo anexo = new Anexo();
         switch (i) {
           case 0:
-            anexo.tipo = "principal";
+            anexo.tipo = "general";
             break;
           case 1:
           case 2:

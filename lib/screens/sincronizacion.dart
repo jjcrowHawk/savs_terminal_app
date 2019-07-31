@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
+import 'package:intl/intl.dart';
 import 'package:progress_dialog/progress_dialog.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:terminal_sismos_app/db/models.dart';
@@ -66,18 +67,30 @@ class _SincronizacionPageState extends State<SincronizacionPage> {
     ProgressDialog waitingDialog=new ProgressDialog(this.context, ProgressDialogType.Normal);
     waitingDialog.setMessage("Syncing forms");
     waitingDialog.show();
+    Map<Vivienda,String> results= Map<Vivienda,String>();
+    List<Ficha> fichas= new List<Ficha>();
 
-    Ficha().select().estado.equals("Finalizada").toList((fichas) {
-      if(fichas.isEmpty){
+    bool hasGotFichasData=false;
+    Ficha().select().estado.equals("Finalizada").toList((fichasList) {
+      fichas= fichasList;
+      hasGotFichasData= true;
+    });
+    //Future.delayed(Duration(seconds:1));
+    //waitingDialog.update(message:"Syncing form {}");
+    while(!hasGotFichasData) {
+      await Future.delayed(Duration(milliseconds: 100));
+    }
+    if(fichas.isEmpty){
         resultAlert= _buildAlertWidget("No Forms found", "There are no forms to sync",type: AlertType.info);
         resultAlert.show();
         return;
-      }
-      fichas.forEach((ficha) async{
+    }
+    for(Ficha ficha in fichas){
         bool hasGotDataFicha=false;
         Vivienda vivienda;
         List<Respuesta> respuestas;
         List<Anexo> anexos;
+
 
         ficha.getVivienda((v){
             vivienda = v;
@@ -101,14 +114,37 @@ class _SincronizacionPageState extends State<SincronizacionPage> {
         print("respuestas ${respuestas.toString()}");
         print("anexos ${anexos.toString()}");
 
+        Future.delayed(Duration(seconds:1));
+        waitingDialog.update(message:"Syncing form ${vivienda.inspeccion_id}");
+
         String json =await _buildJson(ficha,vivienda,respuestas,anexos);
-        debugPrint(json);
+        //debugPrint(json);
 
-        await _submitToServer(json, anexos);
+        String response= await _submitToServer(json, anexos);
+        if(response !=null){
+          results[vivienda]= response;
+          Map<String,dynamic> update= new Map<String,dynamic>();
+          //update["estado"]= "ENVIADA";
 
+          //waitingDialog.update(message:"Form {}");
+          //Future.delayed(Duration(seconds:3));
+        }
+        else{
 
-      });
-    });
+        }
+
+      }
+      print("OUT OF FUNCTION");
+      waitingDialog.hide();
+      String message= "Process was completed successfuly with these results:\n\n";
+      for(Vivienda v in results.keys){
+        if(results[v] == "OK")
+          message+= "Form ${v.inspeccion_id} has been submited to server.\n\n";
+        else
+          message+= "Form ${v.inspeccion_id} has not been submited. Check your form or try again.\n\n";
+      }
+      resultAlert= _buildAlertWidget("Forms synced", message,type: AlertType.success);
+      resultAlert.show();
     /*await Future.delayed(Duration(seconds: 5));
     if(waitingDialog.isShowing())
       waitingDialog.hide();
@@ -123,12 +159,19 @@ class _SincronizacionPageState extends State<SincronizacionPage> {
     fichaMap.remove("activo");
     fichaMap.remove("ViviendaId");
     fichaMap.remove("isDeleted");
+    DateFormat dateFormatter = new DateFormat("dd-MM-yyyy");
+    DateTime date= dateFormatter.parse(fichaMap["fecha_inspeccion"]);
+    DateFormat jsonDateFormatter= new DateFormat("yyyy-MM-ddTHH:mm:ss");
+    fichaMap["fecha_inspeccion"]= jsonDateFormatter.format(date);
 
 
     //manipulacion de la vivienda
     Map<String,dynamic> viviendaMap= vivienda.toMap();
     viviendaMap.remove("id");
     viviendaMap.remove("isDeleted");
+    if(viviendaMap.containsKey("elevacion")){
+      viviendaMap["elevacion"]= double.parse(viviendaMap["elevacion"].toStringAsFixed(2));
+    }
     //print("vivienda map: $viviendaMap");
     fichaMap["Vivienda"]= viviendaMap;
 
@@ -213,7 +256,7 @@ class _SincronizacionPageState extends State<SincronizacionPage> {
         resptMap.remove("isDeleted");
         resptMap["opcion"]= resptMap.remove("OpcionId");
 
-        respuestaMap["RespuestaOpcionSimple"]= resptMap;
+        respuestaMap["RespuestaOpcionSimple"]= [resptMap];
       }
       else if(item.tipo == "OpMultiple"){
         bool gotRespData= false;
@@ -255,7 +298,7 @@ class _SincronizacionPageState extends State<SincronizacionPage> {
         }
 
         resptMap["RespuestaOpcion"]= opresMapList;
-        respuestaMap["RespuestaOpcionMultiple"]= resptMap;
+        respuestaMap["RespuestaOpcionMultiple"]= [resptMap];
       }
 
       respuestasMapList.add(respuestaMap);
@@ -263,12 +306,13 @@ class _SincronizacionPageState extends State<SincronizacionPage> {
     //print(respuestasMapList);
     fichaMap["Respuesta"]= respuestasMapList;
 
-    JsonEncoder encoder= JsonEncoder.withIndent(null);
+    JsonEncoder encoder= JsonEncoder.withIndent(" ");
     String json= encoder.convert(fichaMap);
     return json;
   }
 
-  Future _submitToServer(String jsonData,List<Anexo> anexos) async{
+  Future<String> _submitToServer(String jsonData,List<Anexo> anexos) async{
+      print("SENDING ANEXOS FROM FICHA ${anexos.isNotEmpty ? anexos.first.FichaId : ""}");
       var request= http.MultipartRequest("POST",Uri.parse("https://sivswebapp.azurewebsites.net/api/sincronizarFichas"));
       request.fields['json']= jsonData;
       for(Anexo anexo in anexos){
@@ -282,12 +326,16 @@ class _SincronizacionPageState extends State<SincronizacionPage> {
         request.files.add(mfile);
       }
 
-      var response= await request.send();
+      final response= await request.send();
       if(response.statusCode == 200){
-
+        String body= await  response.stream.bytesToString();
+        print("OK respones with $body");
+        return "OK";
       }
       else{
-
+        String body= await response.stream.bytesToString();
+        print("ERROR RESPONSE WITH $body");
+        return "ERROR";
       }
   }
 
