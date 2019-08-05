@@ -30,16 +30,6 @@ class _MenuPageState extends State<MenuPage> {
   Alert alertFail;
 
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-    });
-  }
-
 
   @override
   void initState() {
@@ -226,7 +216,6 @@ class _MenuPageState extends State<MenuPage> {
 
   Future<String> fetchFichaUpdate() async {
     final response = await http.get("https://sivswebapp.azurewebsites.net/api/actualizarfichatelefono");
-    http.Request r= new http.Request("GET", Uri.http("", ""));
     if (response.statusCode == 200) {
       // If the call to the server was successful, parse the JSON.
       return response.body;
@@ -289,7 +278,7 @@ class _MenuPageState extends State<MenuPage> {
   }
 
   void printDatabase(){
-    Seccion().select().toList((secciones){
+    /*Seccion().select().toList((secciones){
       secciones.forEach((seccion) async{
         print("Seccion: ${seccion.toMap()}");
         await seccion.getVariables((variableList){
@@ -311,8 +300,36 @@ class _MenuPageState extends State<MenuPage> {
           });
         });
       });
+    });*/
+    Vivienda().select().toList((viviendaList){
+      viviendaList.forEach((v){
+        v.getFichas((fichaList){
+          fichaList.forEach((ficha){
+            ficha.getAnexos((anexoList){
+              ficha.getRespuestas((respuestaList){
+                print("${v.toMap()}");
+                print("${ficha.toMap()}");
+                for(Anexo a in anexoList)
+                  print("${a.toMap()}");
+                for(Respuesta r in respuestaList) {
+                  r.getRespuestatextos((respuestatextoList){
+                    r.getRespuestaopcionsimples((respuestaopcionsimpleList){
+                      r.getRespuestaopcionmultiples((respuestaopcionmultipleList){
+                        print(" ANSWER: ${r.toMap()}");
+                        print("Text: ${respuestatextoList.isNotEmpty ? respuestatextoList.first.toMap() : ""}");
+                        print("Simple:${respuestaopcionsimpleList.isNotEmpty ? respuestaopcionsimpleList.first.toMap() : ""}");
+                        print("Mult: ${respuestaopcionmultipleList.isNotEmpty ? respuestaopcionmultipleList.first.toMap(): ""}");
+                      });
+                    });
+                  });
+                }
+              });
+            });
+          });
+        });
+      });
     });
 
-    Ficha().select().delete();
+    Ficha().select().recover();
   }
 }

@@ -117,7 +117,7 @@ class fichaItemListWidget extends StatelessWidget {
                       ),
                       Container(
                         child: Text(
-                          DemoLocalizations.of(context).localizedValues[ficha.estado],
+                          DemoLocalizations.of(context).localizedValues[ficha.estado] ?? "",
                           textAlign: TextAlign.left,
                           style: TextStyle(fontFamily: 'Arvo',color: Color.fromARGB(255, 48, 127, 226),fontSize: 16),
                         ),

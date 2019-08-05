@@ -75,16 +75,20 @@ class _SincronizacionPageState extends State<SincronizacionPage> {
       fichas= fichasList;
       hasGotFichasData= true;
     });
+
     //Future.delayed(Duration(seconds:1));
     //waitingDialog.update(message:"Syncing form {}");
     while(!hasGotFichasData) {
       await Future.delayed(Duration(milliseconds: 100));
     }
+
     if(fichas.isEmpty){
+        waitingDialog.hide();
         resultAlert= _buildAlertWidget("No Forms found", "There are no forms to sync",type: AlertType.info);
         resultAlert.show();
         return;
     }
+
     for(Ficha ficha in fichas){
         bool hasGotDataFicha=false;
         Vivienda vivienda;
@@ -118,6 +122,10 @@ class _SincronizacionPageState extends State<SincronizacionPage> {
         waitingDialog.update(message:"Syncing form ${vivienda.inspeccion_id}");
 
         String json =await _buildJson(ficha,vivienda,respuestas,anexos);
+        if(json == null){
+          results[vivienda]= "PARSING_ERROR";
+          continue;
+        }
         //debugPrint(json);
 
         String response= await _submitToServer(json, anexos);
@@ -126,11 +134,8 @@ class _SincronizacionPageState extends State<SincronizacionPage> {
           Map<String,dynamic> update= new Map<String,dynamic>();
           //update["estado"]= "ENVIADA";
 
-          //waitingDialog.update(message:"Form {}");
-          //Future.delayed(Duration(seconds:3));
         }
         else{
-
         }
 
       }
@@ -140,8 +145,10 @@ class _SincronizacionPageState extends State<SincronizacionPage> {
       for(Vivienda v in results.keys){
         if(results[v] == "OK")
           message+= "Form ${v.inspeccion_id} has been submited to server.\n\n";
-        else
-          message+= "Form ${v.inspeccion_id} has not been submited. Check your form or try again.\n\n";
+        else if(results[v] == "ERROR")
+          message+= "Form ${v.inspeccion_id} has not been submited. Try again later.\n\n";
+        else if(results[v] == "PARSING_ERROR")
+          message+= "Form ${v.inspeccion_id} had an unexpected error. Please check your form.\n\n";
       }
       resultAlert= _buildAlertWidget("Forms synced", message,type: AlertType.success);
       resultAlert.show();
@@ -216,6 +223,10 @@ class _SincronizacionPageState extends State<SincronizacionPage> {
         bool gotRespData= false;
         Respuestatexto respt;
         respuesta.getRespuestatextos((resptextoList){
+          if(resptextoList.isEmpty){
+            gotRespData=true;
+            return;
+          }
           respt= resptextoList.first;
           gotRespData= true;
         });
@@ -239,6 +250,10 @@ class _SincronizacionPageState extends State<SincronizacionPage> {
         Respuestaopcionsimple respos;
 
         respuesta.getRespuestaopcionsimples((respList){
+          if(respList.isEmpty){
+            gotRespData= true;
+            return;
+          }
           respos= respList.first;
           gotRespData= true;
         });
@@ -265,6 +280,10 @@ class _SincronizacionPageState extends State<SincronizacionPage> {
 
 
         respuesta.getRespuestaopcionmultiples((respList){
+          if(respList.isEmpty){
+            gotRespData= true;
+            return;
+          }
           respom= respList.first;
           if(respom == null){
             gotRespData= true;

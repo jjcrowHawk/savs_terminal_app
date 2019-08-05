@@ -299,10 +299,11 @@ class _NuevaFichaPageState extends State<NuevaFichaPage> {
     for(Widget wid in secciones){
       if(wid.runtimeType == SeccionWidget){
         SeccionWidget secWidget=  wid as SeccionWidget;
+        print("THIS SECTION: ${secWidget.seccion.nombre}");
         for(Widget wid_var in secWidget.variableWidgets){
           if(wid_var.runtimeType == VariableWidget) {
             VariableWidget varWidget = wid_var as VariableWidget;
-            if(varWidget.variable.obligatoria) {
+            //if(varWidget.variable.obligatoria) {
               for (Widget wid_item in varWidget.itemWidgets) {
                 if (wid_item.runtimeType == ItemWidget) {
                   ItemWidget itemWidget = wid_item as ItemWidget;
@@ -311,6 +312,12 @@ class _NuevaFichaPageState extends State<NuevaFichaPage> {
                   res.activo= true;
                   res.ItemVariableId= itemWidget.item.id;
                   res.FichaId= idFicha;
+
+                  //print("AIUUUUUUUUDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA :'V  ");
+
+                  print("${itemWidget.item.nombre} - ${itemWidget.item.tipo}");
+                  print("${itemWidget.item.tipo == "Texto" ? "ES TEXTO" : "" }");
+                  print("${itemWidget.item.tipo == "Texto" ? "This item ${itemWidget.item.id} with text ${itemWidget.textoController.text}" : ""}");
 
                   if(itemWidget.item.tipo == "Texto"  && itemWidget.textoController.text.isNotEmpty){
                     int resId= await res.save();
@@ -376,7 +383,7 @@ class _NuevaFichaPageState extends State<NuevaFichaPage> {
                   }
                 }
               }
-            }
+            //}
           }
         }
       }
