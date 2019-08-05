@@ -131,7 +131,9 @@ class _SincronizacionPageState extends State<SincronizacionPage> {
         String response= await _submitToServer(json, anexos);
         if(response !=null){
           results[vivienda]= response;
-          Map<String,dynamic> update= new Map<String,dynamic>();
+          ficha.estado= "Enviada";
+          ficha.save();
+          //Map<String,dynamic> update= new Map<String,dynamic>();
           //update["estado"]= "ENVIADA";
 
         }

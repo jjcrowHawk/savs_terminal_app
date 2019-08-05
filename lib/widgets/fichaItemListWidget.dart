@@ -6,9 +6,12 @@ class fichaItemListWidget extends StatelessWidget {
   Ficha ficha;
   Vivienda vivienda;
   bool forDelete= false;
+  Function(Ficha f) callBack;
 
 
-  fichaItemListWidget(this.ficha, this.vivienda,{this.forDelete});
+  fichaItemListWidget(this.ficha, this.vivienda,{this.forDelete,this.callBack}){
+    forDelete= forDelete == null ? false : forDelete;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,6 +19,7 @@ class fichaItemListWidget extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal:15.0),
       child: Container(
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
             Container(
               padding: EdgeInsets.only(right: 14),
@@ -117,7 +121,7 @@ class fichaItemListWidget extends StatelessWidget {
                       ),
                       Container(
                         child: Text(
-                          DemoLocalizations.of(context).localizedValues[ficha.estado] ?? "",
+                          DemoLocalizations.of(context).localizedValues[ficha.estado.toLowerCase()] ?? "",
                           textAlign: TextAlign.left,
                           style: TextStyle(fontFamily: 'Arvo',color: Color.fromARGB(255, 48, 127, 226),fontSize: 16),
                         ),
@@ -127,7 +131,16 @@ class fichaItemListWidget extends StatelessWidget {
                   )
                 ],
               )
-            )
+            ),
+            forDelete ? Container(
+              padding: EdgeInsets.only(left: 10),
+              alignment: Alignment.centerRight,
+              child: IconButton(
+                  icon: Image.asset("assets/images/delete.png",width: 150,height: 150,color: Color.fromARGB(255, 249, 95, 98),),
+                  onPressed: ()=> callBack(ficha),
+              ),
+              //color: Color.fromARGB(255, 249, 95, 98),
+            ): Container(),
           ],
         ),
         decoration: BoxDecoration(
