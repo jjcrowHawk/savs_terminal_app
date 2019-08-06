@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:terminal_sismos_app/db/DBModel.dart';
-import 'package:terminal_sismos_app/db/models.dart';
+import 'package:terminal_sismos_app/screens/fichas/ficha_editor.dart';
 
 
 //Screens
@@ -74,6 +74,7 @@ class MyApp extends StatelessWidget {
         '/fichas/nueva_ficha': (BuildContext context) => NuevaFichaPage(),
         '/fichas/editar_ficha': (BuildContext context) => EditarFichaPage(),
         '/fichas/eliminar_ficha': (BuildContext context) => EliminarFichaPage(),
+        //'/fichas/editor/edit': (BuildContext) => FichaEditorPage(),
       },
     );
   }

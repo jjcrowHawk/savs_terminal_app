@@ -23,7 +23,7 @@ class _EditarFichaPageState extends State<EditarFichaPage> {
         for(Vivienda vivienda in viviendas){
           for(Ficha ficha in fichas){
             if(ficha.ViviendaId == vivienda.id){
-              widgets.add(fichaItemListWidget(ficha,vivienda));
+              widgets.add(fichaItemListWidget(ficha,vivienda,forDelete: false,screenToNavigate: '/fichas/editor/edit',));
               break;
             }
           }
