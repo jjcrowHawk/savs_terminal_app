@@ -4,8 +4,7 @@ import 'package:progress_dialog/progress_dialog.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'package:terminal_sismos_app/db/models.dart';
 import 'package:terminal_sismos_app/utils/DemoLocalizations.dart';
-import 'package:terminal_sismos_app/widgets/AnexoPage.dart';
-import 'package:terminal_sismos_app/widgets/CasaInfoPage.dart';
+import 'package:terminal_sismos_app/widgets/AnexoPageEdit.dart';
 import 'package:terminal_sismos_app/widgets/CasaInfoPageEdit.dart';
 import 'package:terminal_sismos_app/widgets/ItemEditWidget.dart';
 import 'package:terminal_sismos_app/widgets/ItemWidget.dart';
@@ -30,7 +29,7 @@ class _FichaEditorPageState extends State<FichaEditorPage> {
   List<Widget> tabs_titles= new List<Widget>();
   final PageController pageController= new PageController();
   CasaInfoPageEdit infoPage;
-  AnexoPage anexoPage;
+  AnexoPageEdit anexoPage;
   Alert alertContinue;
   Map<String,dynamic> datosFicha= new Map<String,dynamic>();
 
@@ -85,7 +84,7 @@ class _FichaEditorPageState extends State<FichaEditorPage> {
           });
           pages.add(new SeccionWidget(seccion, vWidgets, this.pageController));
         });
-        anexoPage = AnexoPage(this.pageController);
+        anexoPage = AnexoPageEdit(this.pageController,widget.ficha);
         pages.add(anexoPage);
         setState(() {
           secciones = pages;
@@ -254,28 +253,28 @@ class _FichaEditorPageState extends State<FichaEditorPage> {
       return;
     }
 
-    Vivienda vivienda= Vivienda();
-    vivienda.inspeccion_id= infoPage.bidController.text;
-    vivienda.edad_construccion= int.tryParse(infoPage.bageController.text);
-    vivienda.elevacion= double.tryParse(infoPage.elevationController.text);
-    vivienda.sector= infoPage.sectorController.text;
-    vivienda.direccion= infoPage.addressController.text;
-    int viviendaId=  await vivienda.save();
-    print("THIS NEW VIVIENDA: ${vivienda.toMap()}");
+
+    widget.vivienda.inspeccion_id= infoPage.bidController.text;
+    widget.vivienda.edad_construccion= int.tryParse(infoPage.bageController.text);
+    widget.vivienda.elevacion= double.tryParse(infoPage.elevationController.text);
+    widget.vivienda.sector= infoPage.sectorController.text;
+    widget.vivienda.direccion= infoPage.addressController.text;
+    widget.vivienda.ubicacion= infoPage.locationController.text;
+    int viviendaId=  await widget.vivienda.save();
+    print("THIS NEW VIVIENDA: ${widget.vivienda.toMap()}");
     if(viviendaId <=0){
       waitingDialog.hide();
       errorAlert.show();
       return;
     }
 
-    Ficha ficha= Ficha();
-    ficha.inspector= infoPage.inspectorController.text;
-    ficha.fecha_inspeccion= infoPage.dateController.text;
-    ficha.activo= true;
-    ficha.estado= isFinished ? "Finalizada" : "Pendiente";
-    ficha.ViviendaId= viviendaId;
-    print("THIS NEW FICHA: ${ficha.toMap()}");
-    int idFicha= await ficha.save();
+    widget.ficha.inspector= infoPage.inspectorController.text;
+    widget.ficha.fecha_inspeccion= infoPage.dateController.text;
+    widget.ficha.activo= true;
+    widget.ficha.estado= isFinished ? "Finalizada" : "Pendiente";
+    widget.ficha.ViviendaId= widget.vivienda.id;
+    print("THIS NEW FICHA: ${widget.ficha.toMap()}");
+    int idFicha= await widget.ficha.save();
     if(idFicha <=0){
       waitingDialog.hide();
       errorAlert.show();
@@ -285,30 +284,41 @@ class _FichaEditorPageState extends State<FichaEditorPage> {
     for(int i=0;i < anexoPage.imagesUri.length; i++) {
       if (!anexoPage.imagesUri[i].contains("asset")) {
         String imagePath = anexoPage.imagesUri[i];
-        Anexo anexo = new Anexo();
-        switch (i) {
-          case 0:
-            anexo.tipo = "general";
-            break;
-          case 1:
-          case 2:
-          case 3:
-            anexo.tipo = "specific";
-            break;
-          default:
-            anexo.tipo = "appendix";
-            break;
-        }
-        anexo.url_anexo = imagePath;
-        anexo.FichaId = idFicha;
-        print("THIS NEW ANEXO: ${anexo.toMap()}");
-        int anexId= await anexo.save();
-        if(anexId<=0){
-          waitingDialog.hide();
-          errorAlert.show();
-          return;
+        if(!anexoPage.anexosOriginales.contains(anexoPage.imagesUri[i])) {
+          Anexo anexo = new Anexo();
+          switch (i) {
+            case 0:
+              anexo.tipo = "general";
+              break;
+            case 1:
+            case 2:
+            case 3:
+              anexo.tipo = "specific";
+              break;
+            default:
+              anexo.tipo = "appendix";
+              break;
+          }
+          anexo.url_anexo = imagePath;
+          anexo.FichaId = idFicha;
+          print("THIS NEW ANEXO: ${anexo.toMap()}");
+          int anexId = await anexo.save();
+          if (anexId <= 0) {
+            waitingDialog.hide();
+            errorAlert.show();
+            return;
+          }
         }
       }
+      //Se busca si algun anexo anterior ha sido eliminado buscando en la lista actual
+      widget.ficha.getAnexos((anexoList){
+        for(String anexoOriginal in anexoPage.anexosOriginales){
+          if(!anexoPage.imagesUri.contains(anexoOriginal)){
+            anexoList.singleWhere((an) => an.url_anexo == anexoOriginal).delete();
+          }
+        }
+      });
+
     }
 
     for(Widget wid in secciones){
@@ -320,82 +330,192 @@ class _FichaEditorPageState extends State<FichaEditorPage> {
             VariableWidget varWidget = wid_var as VariableWidget;
             //if(varWidget.variable.obligatoria) {
             for (Widget wid_item in varWidget.itemWidgets) {
-              if (wid_item.runtimeType == ItemWidget) {
-                ItemWidget itemWidget = wid_item as ItemWidget;
-                Respuesta res= new Respuesta();
-                res.nota= itemWidget.noteController.text.isNotEmpty ? itemWidget.noteController.text : null;
-                res.activo= true;
-                res.ItemVariableId= itemWidget.item.id;
-                res.FichaId= idFicha;
-
-                //print("AIUUUUUUUUDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA :'V  ");
-
-                print("${itemWidget.item.nombre} - ${itemWidget.item.tipo}");
-                print("${itemWidget.item.tipo == "Texto" ? "ES TEXTO" : "" }");
-                print("${itemWidget.item.tipo == "Texto" ? "This item ${itemWidget.item.id} with text ${itemWidget.textoController.text}" : ""}");
-
-                if(itemWidget.item.tipo == "Texto"  && itemWidget.textoController.text.isNotEmpty){
-                  int resId= await res.save();
-                  if(resId<=0){
-                    waitingDialog.hide();
-                    errorAlert.show();
-                    return;
-                  }
+              if (wid_item.runtimeType == ItemEditWidget) {
+                ItemEditWidget itemWidget = wid_item as ItemEditWidget;
+                if(itemWidget.respuesta == null) {
+                  Respuesta res =new Respuesta();
+                  res.nota =
+                  itemWidget.noteController.text.isNotEmpty ? itemWidget
+                      .noteController.text : null;
+                  res.activo = true;
+                  res.ItemVariableId = itemWidget.item.id;
+                  res.FichaId = idFicha;
 
 
-                  Respuestatexto rest= new Respuestatexto();
-                  rest.texto= itemWidget.textoController.text;
-                  rest.RespuestaId= resId;
-                  int restId= await rest.save();
-                  if(restId <=0){
-                    waitingDialog.hide();
-                    errorAlert.show();
-                    return;
-                  }
-                  print("THIS NEW RESPUESTA: ${res.toMap()}, ${rest.toMap()}");
-                }
-                else if(itemWidget.item.tipo == "OpSimple" && itemWidget.responsesMap.isNotEmpty){
-                  int resId= await res.save();
-                  if(resId<=0){
-                    waitingDialog.hide();
-                    errorAlert.show();
-                    return;
-                  }
+                  print("${itemWidget.item.nombre} - ${itemWidget.item.tipo}");
+                  print(
+                      "${itemWidget.item.tipo == "Texto" ? "ES TEXTO" : "" }");
+                  print("${itemWidget.item.tipo == "Texto"
+                      ? "This item ${itemWidget.item.id} with text ${itemWidget
+                      .textoController.text}"
+                      : ""}");
 
-                  int opId= itemWidget.responsesMap.values.toList()[0];
-                  Respuestaopcionsimple resops= new Respuestaopcionsimple();
-                  resops.RespuestaId= resId;
-                  resops.OpcionId= opId;
-                  int resopsId= await resops.save();
-                  if(resopsId <=0){
-                    waitingDialog.hide();
-                    errorAlert.show();
-                    return;
-                  }
-                  print("THIS NEW RESPUESTA: ${res.toMap()}, ${resops.toMap()}");
-                }
-                else if(itemWidget.item.tipo == "OpMultiple" && itemWidget.responsesMap.isNotEmpty){
-                  int resId= await res.save();
-                  if(resId<=0){
-                    waitingDialog.hide();
-                    errorAlert.show();
-                    return;
-                  }
-
-                  int resopmId= await Respuestaopcionmultiple.withFields(resId, false).save();
-                  itemWidget.responsesMap.forEach((label,opId) async{
-                    Opcionrespuesta opres= new Opcionrespuesta();
-                    opres.OpcionId= opId;
-                    opres.RespuestaOpcionMultipleId= resopmId;
-                    int opresId= await opres.save();
-                    if(opresId <=0){
+                  if (itemWidget.item.tipo == "Texto" &&
+                      itemWidget.textoController.text.isNotEmpty) {
+                    int resId = await res.save();
+                    if (resId <= 0) {
                       waitingDialog.hide();
                       errorAlert.show();
                       return;
                     }
-                    print("THIS NEW RESPUESTA: ${res.toMap()}, ${opres.toMap()}");
-                  });
+
+
+                    Respuestatexto rest = new Respuestatexto();
+                    rest.texto = itemWidget.textoController.text;
+                    rest.RespuestaId = resId;
+                    int restId = await rest.save();
+                    if (restId <= 0) {
+                      waitingDialog.hide();
+                      errorAlert.show();
+                      return;
+                    }
+                    print(
+                        "THIS NEW RESPUESTA: ${res.toMap()}, ${rest.toMap()}");
+                  }
+                  else if (itemWidget.item.tipo == "OpSimple" &&
+                      itemWidget.responsesMap.isNotEmpty) {
+                    int resId = await res.save();
+                    if (resId <= 0) {
+                      waitingDialog.hide();
+                      errorAlert.show();
+                      return;
+                    }
+
+                    int opId = itemWidget.responsesMap.values.toList()[0];
+                    Respuestaopcionsimple resops = new Respuestaopcionsimple();
+                    resops.RespuestaId = resId;
+                    resops.OpcionId = opId;
+                    int resopsId = await resops.save();
+                    if (resopsId <= 0) {
+                      waitingDialog.hide();
+                      errorAlert.show();
+                      return;
+                    }
+                    print("THIS NEW RESPUESTA: ${res.toMap()}, ${resops
+                        .toMap()}");
+                  }
+                  else if (itemWidget.item.tipo == "OpMultiple" &&
+                      itemWidget.responsesMap.isNotEmpty) {
+                    int resId = await res.save();
+                    if (resId <= 0) {
+                      waitingDialog.hide();
+                      errorAlert.show();
+                      return;
+                    }
+
+                    int resopmId = await Respuestaopcionmultiple.withFields(
+                        resId, false).save();
+                    itemWidget.responsesMap.forEach((label, opId) async {
+                      Opcionrespuesta opres = new Opcionrespuesta();
+                      opres.OpcionId = opId;
+                      opres.RespuestaOpcionMultipleId = resopmId;
+                      int opresId = await opres.save();
+                      if (opresId <= 0) {
+                        waitingDialog.hide();
+                        errorAlert.show();
+                        return;
+                      }
+                      print("THIS NEW RESPUESTA: ${res.toMap()}, ${opres
+                          .toMap()}");
+                    });
+                  }
                 }
+
+                else if(itemWidget.respuesta != null && itemWidget.changedValue == true){
+                  Respuesta res= itemWidget.respuesta;
+                  res.nota =
+                  itemWidget.noteController.text.isNotEmpty ? itemWidget
+                      .noteController.text : null;
+                  res.activo = true;
+                  int resId = await res.save();
+                  if (resId <= 0) {
+                    waitingDialog.hide();
+                    errorAlert.show();
+                    return;
+                  }
+
+                  if (itemWidget.item.tipo == "Texto" &&
+                      itemWidget.textoController.text.isNotEmpty) {
+
+
+                    res.getRespuestatextos((respuestatextoList){
+                      respuestatextoList.first.texto= itemWidget.textoController.text;
+                      respuestatextoList.first.save().then((value){
+                        if(value <=0){
+                          waitingDialog.hide();
+                          errorAlert.show();
+                          return;
+                        }
+                      });
+                    });
+
+                    await Future.delayed(Duration(milliseconds: 200));
+
+                    //Respuestatexto rest = new Respuestatexto();
+                    //rest.texto = itemWidget.textoController.text;
+                    //rest.RespuestaId = resId;
+                    //int restId = await rest.save();
+                    //if (restId <= 0) {
+                      //waitingDialog.hide();
+                      //errorAlert.show();
+                      //return;
+                    //}
+                    //print(
+                    //    "THIS NEW RESPUESTA: ${res.toMap()}, ${rest.toMap()}");
+                  }
+                  else if (itemWidget.item.tipo == "OpSimple" &&
+                      itemWidget.responsesMap.isNotEmpty) {
+
+                    int opId = itemWidget.responsesMap.values.toList()[0];
+                    res.getRespuestaopcionsimples((respuestasimpleList){
+                      respuestasimpleList.first.OpcionId= opId;
+                      respuestasimpleList.first.save().then((value){
+                        if(value <=0){
+                          waitingDialog.hide();
+                          errorAlert.show();
+                          return;
+                        }
+                      });
+                    });
+
+                    await Future.delayed(Duration(milliseconds: 200));
+                    /*Respuestaopcionsimple resops = new Respuestaopcionsimple();
+                    resops.RespuestaId = resId;
+                    resops.OpcionId = opId;
+                    int resopsId = await resops.save();
+                    if (resopsId <= 0) {
+                      waitingDialog.hide();
+                      errorAlert.show();
+                      return;
+                    }
+                    print("THIS NEW RESPUESTA: ${res.toMap()}, ${resops
+                        .toMap()}");*/
+                  }
+                  else if (itemWidget.item.tipo == "OpMultiple" &&
+                      itemWidget.responsesMap.isNotEmpty) {
+
+                    res.getRespuestaopcionmultiples((respuestaopcionmultipleList){
+                      respuestaopcionmultipleList.first.getRespuestaopcionrespuestas((opcionrespuestaList){
+                        opcionrespuestaList.forEach((opres)=> opres.delete());
+                        itemWidget.responsesMap.forEach((label, opId) async {
+                          Opcionrespuesta opres = new Opcionrespuesta();
+                          opres.OpcionId = opId;
+                          opres.RespuestaOpcionMultipleId = respuestaopcionmultipleList.first.id;
+                          int opresId = await opres.save();
+                          if (opresId <= 0) {
+                            waitingDialog.hide();
+                            errorAlert.show();
+                            return;
+                          }
+                        });
+                      });
+                    });
+                    await Future.delayed(Duration(milliseconds: 500));
+
+                  }
+
+                }
+
               }
             }
             //}

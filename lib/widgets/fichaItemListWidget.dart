@@ -19,9 +19,11 @@ class fichaItemListWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: (){
-        if(screenToNavigate != null)
+        if(screenToNavigate != null) {
           print('goin to editor');
-          Navigator.of(context).push(MaterialPageRoute(builder: (context) => FichaEditorPage(vivienda,ficha)));
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => FichaEditorPage(vivienda, ficha)));
+        }
       },
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal:15.0),
@@ -43,7 +45,7 @@ class fichaItemListWidget extends StatelessWidget {
                           child: Text(
                             "ID: ",
                             textAlign: TextAlign.left,
-                            style: TextStyle(fontFamily: 'Arvo',color: Color.fromARGB(255, 48, 127, 226),fontSize: 16, fontWeight: FontWeight.bold),
+                            style: TextStyle(fontFamily: 'Arvo',color: Color.fromARGB(255, 48, 127, 226),fontSize: 14, fontWeight: FontWeight.bold),
                           ),
                           alignment: Alignment.centerLeft,
                         ),
@@ -51,7 +53,7 @@ class fichaItemListWidget extends StatelessWidget {
                           child: Text(
                             vivienda.inspeccion_id,
                             textAlign: TextAlign.left,
-                            style: TextStyle(fontFamily: 'Arvo',color: Color.fromARGB(255, 48, 127, 226),fontSize: 16),
+                            style: TextStyle(fontFamily: 'Arvo',color: Color.fromARGB(255, 48, 127, 226),fontSize: 14),
                           ),
                           alignment: Alignment.centerLeft,
                         ),
@@ -63,7 +65,7 @@ class fichaItemListWidget extends StatelessWidget {
                           child: Text(
                             "INSPECTOR:   ",
                             textAlign: TextAlign.left,
-                            style: TextStyle(fontFamily: 'Arvo',color: Color.fromARGB(255, 48, 127, 226),fontSize: 16, fontWeight: FontWeight.bold),
+                            style: TextStyle(fontFamily: 'Arvo',color: Color.fromARGB(255, 48, 127, 226),fontSize: 14, fontWeight: FontWeight.bold),
                           ),
                           alignment: Alignment.centerLeft,
                         ),
@@ -71,7 +73,7 @@ class fichaItemListWidget extends StatelessWidget {
                           child: Text(
                             ficha.inspector,
                             textAlign: TextAlign.left,
-                            style: TextStyle(fontFamily: 'Arvo',color: Color.fromARGB(255, 48, 127, 226),fontSize: 16),
+                            style: TextStyle(fontFamily: 'Arvo',color: Color.fromARGB(255, 48, 127, 226),fontSize: 14),
                           ),
                           alignment: Alignment.centerLeft,
                         ),
@@ -83,7 +85,7 @@ class fichaItemListWidget extends StatelessWidget {
                           child: Text(
                             "DATE:    ",
                             textAlign: TextAlign.left,
-                            style: TextStyle(fontFamily: 'Arvo',color: Color.fromARGB(255, 48, 127, 226),fontSize: 16, fontWeight: FontWeight.bold),
+                            style: TextStyle(fontFamily: 'Arvo',color: Color.fromARGB(255, 48, 127, 226),fontSize: 14, fontWeight: FontWeight.bold),
                           ),
                           alignment: Alignment.centerLeft,
                         ),
@@ -91,7 +93,7 @@ class fichaItemListWidget extends StatelessWidget {
                           child: Text(
                             ficha.fecha_inspeccion,
                             textAlign: TextAlign.left,
-                            style: TextStyle(fontFamily: 'Arvo',color: Color.fromARGB(255, 48, 127, 226),fontSize: 16),
+                            style: TextStyle(fontFamily: 'Arvo',color: Color.fromARGB(255, 48, 127, 226),fontSize: 14),
                           ),
                           alignment: Alignment.centerLeft,
                         ),
@@ -103,7 +105,7 @@ class fichaItemListWidget extends StatelessWidget {
                           child: Text(
                             "SECTOR:    ",
                             textAlign: TextAlign.left,
-                            style: TextStyle(fontFamily: 'Arvo',color: Color.fromARGB(255, 48, 127, 226),fontSize: 16, fontWeight: FontWeight.bold),
+                            style: TextStyle(fontFamily: 'Arvo',color: Color.fromARGB(255, 48, 127, 226),fontSize: 14, fontWeight: FontWeight.bold),
                           ),
                           alignment: Alignment.centerLeft,
                         ),
@@ -111,7 +113,7 @@ class fichaItemListWidget extends StatelessWidget {
                           child: Text(
                             vivienda.sector,
                             textAlign: TextAlign.left,
-                            style: TextStyle(fontFamily: 'Arvo',color: Color.fromARGB(255, 48, 127, 226),fontSize: 16),
+                            style: TextStyle(fontFamily: 'Arvo',color: Color.fromARGB(255, 48, 127, 226),fontSize: 14),
                           ),
                           alignment: Alignment.centerLeft,
                         ),
@@ -123,7 +125,7 @@ class fichaItemListWidget extends StatelessWidget {
                           child: Text(
                             "${DemoLocalizations.of(context).localizedValues['estado']}:    ",
                             textAlign: TextAlign.left,
-                            style: TextStyle(fontFamily: 'Arvo',color: Color.fromARGB(255, 48, 127, 226),fontSize: 16, fontWeight: FontWeight.bold),
+                            style: TextStyle(fontFamily: 'Arvo',color: Color.fromARGB(255, 48, 127, 226),fontSize: 14, fontWeight: FontWeight.bold),
                           ),
                           alignment: Alignment.centerLeft,
                         ),
@@ -131,7 +133,7 @@ class fichaItemListWidget extends StatelessWidget {
                           child: Text(
                             DemoLocalizations.of(context).localizedValues[ficha.estado.toLowerCase()] ?? "",
                             textAlign: TextAlign.left,
-                            style: TextStyle(fontFamily: 'Arvo',color: Color.fromARGB(255, 48, 127, 226),fontSize: 16),
+                            style: TextStyle(fontFamily: 'Arvo',color: Color.fromARGB(255, 48, 127, 226),fontSize: 14),
                           ),
                           alignment: Alignment.centerLeft,
                         ),

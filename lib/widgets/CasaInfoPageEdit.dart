@@ -5,7 +5,8 @@ import 'package:terminal_sismos_app/db/models.dart';
 
 class CasaInfoPageEdit extends StatefulWidget {
   PageController parentController;
-  final addressController= TextEditingController();
+  final locationController= TextEditingController();
+  final addressController=TextEditingController();
   final dateController= TextEditingController();
   final sectorController= TextEditingController();
   final bidController= TextEditingController();
@@ -25,19 +26,20 @@ class CasaInfoPageEdit extends StatefulWidget {
 
 class _CasaInfoPageEditState extends State<CasaInfoPageEdit>  with AutomaticKeepAliveClientMixin<CasaInfoPageEdit>{
   List<Widget> widgets;
-  List<String> labels=["Address","Date","Sector","Building ID","Elevation","Inspector","Building Age"];
+  List<String> labels=["Location","Address","Date","Sector","Building ID","Elevation","Inspector","Building Age"];
 
 
   @override
   void initState() {
     super.initState();
-    widget.textControllers=[widget.addressController,widget.dateController,widget.sectorController,widget.bidController,
+    widget.textControllers=[widget.locationController,widget.addressController,widget.dateController,widget.sectorController,widget.bidController,
       widget.elevationController,widget.inspectorController,widget.bageController];
 
     widget.sectorController.text = (widget.vivienda.sector != null && widget.vivienda.sector.isNotEmpty) ? widget.vivienda.sector : "";
     widget.bidController.text= (widget.vivienda.inspeccion_id != null && widget.vivienda.inspeccion_id.isNotEmpty) ? widget.vivienda.inspeccion_id : "";
     widget.inspectorController.text= (widget.ficha.inspector != null && widget.ficha.inspector.isNotEmpty) ? widget.ficha.inspector : "";
     widget.bageController.text= (widget.vivienda.edad_construccion!= null) ? widget.vivienda.edad_construccion.toString() : "";
+    widget.addressController.text= (widget.vivienda.direccion!= null) ? widget.vivienda.direccion : "";
   }
 
 
@@ -73,17 +75,17 @@ class _CasaInfoPageEditState extends State<CasaInfoPageEdit>  with AutomaticKeep
       bool mandatory= (labels[i] == "Date" || labels[i] == "Sector" || labels[i] == "Building ID" || labels[i] == "Inspector");
       VoidCallback callback;
 
-      if(labels[i] == "Address"){
+      if(labels[i] == "Location"){
         enabled= false;
         if(false  /*widget.vivienda.direccion != null && widget.vivienda.direccion.isNotEmpty  */) {
-          widget.addressController.text= widget.vivienda.direccion;
+          widget.locationController.text= widget.vivienda.direccion;
           widget.elevationController.text= widget.vivienda.elevacion.toString();
         }
         else{
           Geolocator().getCurrentPosition().then((position) {
             print("Device pos: ${position.longitude} , ${position
                 .latitude}, ${position.altitude}");
-            widget.addressController.text =
+            widget.locationController.text =
             "${position.longitude}, ${position.latitude}";
             widget.elevationController.text = "${position.altitude}";
           });

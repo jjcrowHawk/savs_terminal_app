@@ -3,21 +3,27 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
+import 'package:terminal_sismos_app/db/models.dart';
 
-class AnexoPage extends StatefulWidget {
+class AnexoPageEdit extends StatefulWidget {
   PageController parentController;
   List<String> imagesUri;
+  List<String> anexosOriginales;
+  Ficha ficha;
 
 
-  AnexoPage(this.parentController){
+  AnexoPageEdit(this.parentController,this.ficha){
+    anexosOriginales= new List<String>();
     imagesUri= ["assets/images/imgholder.jpg","assets/images/imgholder.jpg","assets/images/imgholder.jpg","assets/images/imgholder.jpg"];
   }
 
+
   @override
-  _AnexoPageState createState() => _AnexoPageState();
+  _AnexoPageEditState createState() => _AnexoPageEditState();
 }
 
-class _AnexoPageState extends State<AnexoPage> {
+
+class _AnexoPageEditState extends State<AnexoPageEdit> {
   List<Widget> widgets;
   Alert alertImgViewer;
 
@@ -27,6 +33,17 @@ class _AnexoPageState extends State<AnexoPage> {
   @override
   void initState() {
     super.initState();
+
+    widget.ficha.getAnexos((anexoList){
+      for(int i=0;i<anexoList.length;i++){
+        Anexo anexo= anexoList[i];
+        widget.imagesUri[i]= anexo.url_anexo;
+        widget.anexosOriginales.add(anexo.url_anexo);
+      }
+      setState(() {
+
+      });
+    });
   }
 
 
@@ -81,12 +98,12 @@ class _AnexoPageState extends State<AnexoPage> {
   }
 
   Future _pickImageFromGallery(int index) async{
-      var image = await ImagePicker.pickImage(source: ImageSource.gallery);
+    var image = await ImagePicker.pickImage(source: ImageSource.gallery);
 
-      setState(() {
-        print("THIS IMAGE URL: "+image.path);
-        widget.imagesUri[index]= image.path;
-      });
+    setState(() {
+      print("THIS IMAGE URL: "+image.path);
+      widget.imagesUri[index]= image.path;
+    });
   }
 
   Future _pickImageFromCamera(int index) async{
@@ -101,22 +118,22 @@ class _AnexoPageState extends State<AnexoPage> {
   Future _viewImage(int index) async{
     if(!widget.imagesUri[index].contains("assets")) {
       alertImgViewer = new Alert(
-        context: context,
-        title: "",
-        image: Image.file(
-          File(widget.imagesUri[index]),
-          fit: BoxFit.fill,
-          width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height * 0.70,
-        ),
-        buttons: [],
-        style: AlertStyle(
-          backgroundColor: Colors.transparent,
-          alertBorder: RoundedRectangleBorder(
-            side: BorderSide.none,
-            borderRadius: BorderRadius.zero
+          context: context,
+          title: "",
+          image: Image.file(
+            File(widget.imagesUri[index]),
+            fit: BoxFit.fill,
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height * 0.70,
           ),
-        )
+          buttons: [],
+          style: AlertStyle(
+            backgroundColor: Colors.transparent,
+            alertBorder: RoundedRectangleBorder(
+                side: BorderSide.none,
+                borderRadius: BorderRadius.zero
+            ),
+          )
       );
       alertImgViewer.show();
     }
@@ -167,24 +184,25 @@ class _AnexoPageState extends State<AnexoPage> {
                     children: <Widget>[
 
                       Stack(
-                        children: [ GestureDetector(
-                            child: _buildImagePreview(i),
-                            onTap: ()=> _viewImage(i),
-                            onHorizontalDragEnd: (dragDetails)=> _deleteImage(i)
-                        ),
-                          !widget.imagesUri[i].contains("asset") ?
-                          Positioned(
-                            top: 0,
-                            right: 0,
-                            child: IconButton(
-                              icon:  Image.asset("assets/images/delete.png",color: Color.fromARGB(255, 249, 95, 98),),
-                              alignment: Alignment.topRight,
-                              onPressed: () => _deleteImage(i),
-                            ),
-                          ) :
-                          Container()
-                          ,
-                      ]),
+                          children: [ GestureDetector(
+                              child: _buildImagePreview(i),
+                              onTap: ()=> _viewImage(i),
+                              onHorizontalDragEnd: (dragDetails)=> _deleteImage(i)
+                          ),
+                            !widget.imagesUri[i].contains("asset") ?
+                            Positioned(
+                              top: 0,
+                              right: 0,
+                              child: IconButton(
+                                icon:  Image.asset("assets/images/delete.png",color: Color.fromARGB(255, 249, 95, 98),),
+                                alignment: Alignment.topLeft,
+                                onPressed: () => _deleteImage(i),
+                              ),
+                            ) :
+                            Container()
+                            ,
+                          ]
+                      ),
                       Container(
                         padding: EdgeInsets.only(top:10.0),
                         width: MediaQuery.of(context).size.width/2,

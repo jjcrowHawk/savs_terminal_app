@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 
 class CasaInfoPage extends StatefulWidget {
   PageController parentController;
+  final locationController= TextEditingController();
   final addressController= TextEditingController();
   final dateController= TextEditingController();
   final sectorController= TextEditingController();
@@ -23,13 +24,13 @@ class CasaInfoPage extends StatefulWidget {
 
 class _CasaInfoPageState extends State<CasaInfoPage>  with AutomaticKeepAliveClientMixin<CasaInfoPage>{
   List<Widget> widgets;
-  List<String> labels=["Address","Date","Sector","Building ID","Elevation","Inspector","Building Age"];
+  List<String> labels=["Location","Address","Date","Sector","Building ID","Elevation","Inspector","Building Age"];
 
 
   @override
   void initState() {
     super.initState();
-    widget.textControllers=[widget.addressController,widget.dateController,widget.sectorController,widget.bidController,
+    widget.textControllers=[widget.locationController,widget.addressController,widget.dateController,widget.sectorController,widget.bidController,
       widget.elevationController,widget.inspectorController,widget.bageController];
   }
 
@@ -66,11 +67,11 @@ class _CasaInfoPageState extends State<CasaInfoPage>  with AutomaticKeepAliveCli
       bool mandatory= (labels[i] == "Date" || labels[i] == "Sector" || labels[i] == "Building ID" || labels[i] == "Inspector");
       VoidCallback callback;
 
-      if(labels[i] == "Address"){
+      if(labels[i] == "Location"){
         enabled= false;
         Geolocator().getCurrentPosition().then((position){
           print("Device pos: ${position.longitude} , ${position.latitude}, ${position.altitude}");
-          widget.addressController.text= "${position.longitude}, ${position.latitude}";
+          widget.locationController.text= "${position.longitude}, ${position.latitude}";
           widget.elevationController.text= "${position.altitude}";
         });
       }

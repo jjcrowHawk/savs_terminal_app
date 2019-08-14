@@ -26,7 +26,7 @@ class _RevisarFichaPageState extends State<RevisarFichaPage> {
         for(Vivienda vivienda in viviendas){
           for(Ficha ficha in fichas){
             if(ficha.ViviendaId == vivienda.id){
-              widgets.add(fichaItemListWidget(ficha,vivienda));
+              widgets.add(fichaItemListWidget(ficha,vivienda,forDelete: false,screenToNavigate:null,));
               break;
             }
           }

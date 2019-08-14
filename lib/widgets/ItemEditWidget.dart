@@ -11,6 +11,7 @@ class ItemEditWidget extends StatefulWidget {
   final noteController= TextEditingController();
   final textoController= TextEditingController();
   bool editable=true;
+  bool changedValue=false;
 
   ItemEditWidget(this.item,this.parentVar,this.respuesta,this.editable): responsesMap= new Map<String,int>();
 
@@ -95,12 +96,14 @@ class _ItemEditWidgetState extends State<ItemEditWidget> with AutomaticKeepAlive
                 opcionesEscogidas.add(label);
                 print("This info: $label cheked: $isChecked on index: $index with id: ${this.opciones[index].id}");
                 widget.responsesMap[label]=  this.opciones[index].id;
+                widget.changedValue=true;
                 setState(() {
 
                 });
               }
               else{
                 opcionesEscogidas.remove(label);
+                widget.changedValue=true;
                 print("removing This info: $label cheked: $isChecked on index: $index with id: ${this.opciones[index].id}");
                 widget.responsesMap.remove(label);
                 setState(() {
@@ -145,6 +148,7 @@ class _ItemEditWidgetState extends State<ItemEditWidget> with AutomaticKeepAlive
           labelStyle: TextStyle(fontSize: 16.0),
           onChange: (String label, int index) {
             print("This info: $label on $index with id: ${this.opciones[index].id}");
+            widget.changedValue=true;
             widget.responsesMap.clear();
             widget.responsesMap[label]=  this.opciones[index].id;
             setState(() {
@@ -175,6 +179,7 @@ class _ItemEditWidgetState extends State<ItemEditWidget> with AutomaticKeepAlive
                   borderRadius: BorderRadius.circular(10)
               )
           ),
+          onChanged: (text){widget.changedValue=true;},
         ),
       );
     }

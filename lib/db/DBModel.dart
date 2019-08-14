@@ -22,7 +22,8 @@ class TableVivienda extends SqfEntityTable {
       SqfEntityField("edad_construccion",DbType.integer,defaultValue: "0"),
       SqfEntityField("elevacion",DbType.real,defaultValue: "null"),
       SqfEntityField("sector",DbType.text,defaultValue: ""),
-      SqfEntityField("direccion", DbType.text,defaultValue: "")
+      SqfEntityField("direccion", DbType.text,defaultValue: ""),
+      SqfEntityField("ubicacion", DbType.text,defaultValue: "")
     ];
 
     super.init();

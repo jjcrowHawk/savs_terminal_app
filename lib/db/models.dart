@@ -23,6 +23,7 @@ class Vivienda {
   double elevacion;
   String sector;
   String direccion;
+  String ubicacion;
   bool isDeleted;
   // end FIELDS
 
@@ -44,9 +45,9 @@ class Vivienda {
     return __mnVivienda;
   }
 
-  Vivienda({this.id, this.inspeccion_id,this.edad_construccion,this.elevacion,this.sector,this.direccion,this.isDeleted}) { setDefaultValues();}
-  Vivienda.withFields(this.inspeccion_id,this.edad_construccion,this.elevacion,this.sector,this.direccion,this.isDeleted){ setDefaultValues();}
-  Vivienda.withId(this.id, this.inspeccion_id,this.edad_construccion,this.elevacion,this.sector,this.direccion,this.isDeleted){ setDefaultValues();}
+  Vivienda({this.id, this.inspeccion_id,this.edad_construccion,this.elevacion,this.sector,this.direccion,this.ubicacion,this.isDeleted}) { setDefaultValues();}
+  Vivienda.withFields(this.inspeccion_id,this.edad_construccion,this.elevacion,this.sector,this.direccion,this.ubicacion,this.isDeleted){ setDefaultValues();}
+  Vivienda.withId(this.id, this.inspeccion_id,this.edad_construccion,this.elevacion,this.sector,this.direccion,this.ubicacion,this.isDeleted){ setDefaultValues();}
 
   // methods
   Map<String, dynamic> toMap({bool forQuery=false}) {
@@ -56,6 +57,7 @@ class Vivienda {
     if (elevacion != null) map["elevacion"] = elevacion;
     if (sector != null) map["sector"] = sector;
     if (direccion != null) map["direccion"] = direccion;
+    if (ubicacion != null) map["ubicacion"] = ubicacion;
     if (isDeleted != null) map["isDeleted"] = forQuery? (isDeleted ? 1 : 0):isDeleted;
 
     return map;
@@ -68,11 +70,12 @@ class Vivienda {
     this.elevacion = o["elevacion"];
     this.sector = o["sector"];
     this.direccion = o["direccion"];
+    this.ubicacion= o["ubicacion"];
     this.isDeleted = o["isDeleted"] != null ? o["isDeleted"] == 1 : null;
   }
 
   List<dynamic> toArgs() {
-    return[id,inspeccion_id,edad_construccion,elevacion,sector,direccion,isDeleted];
+    return[id,inspeccion_id,edad_construccion,elevacion,sector,direccion,ubicacion,isDeleted];
   }
 
 
@@ -129,7 +132,7 @@ class Vivienda {
   Future<int> save() async {
     if (id == null || id == 0)
       id = await _mnVivienda.insert(
-          Vivienda.withFields(inspeccion_id,edad_construccion,elevacion,sector,direccion,isDeleted));
+          Vivienda.withFields(inspeccion_id,edad_construccion,elevacion,sector,direccion,ubicacion,isDeleted));
     else
       id= await _upsert();
     return id;
@@ -140,7 +143,7 @@ class Vivienda {
   /// </summary>
   /// <returns> Returns a <List<BoolResult>> </returns>
   Future<List<BoolResult>> saveAll(List<Vivienda> viviendas) async {
-    var results = _mnVivienda.saveAll("INSERT OR REPLACE INTO Vivienda (id, inspeccion_id,edad_construccion,elevacion,sector,direccion,isDeleted)  VALUES (?,?,?,?,?,?,?)",viviendas);
+    var results = _mnVivienda.saveAll("INSERT OR REPLACE INTO Vivienda (id, inspeccion_id,edad_construccion,elevacion,sector,direccion,ubicacion,isDeleted)  VALUES (?,?,?,?,?,?,?,?)",viviendas);
     return results;
   }
 
@@ -150,7 +153,7 @@ class Vivienda {
   /// <returns>Returns id</returns>
   Future<int> _upsert() async {
     id = await _mnVivienda.rawInsert(
-        "INSERT OR REPLACE INTO Vivienda (id, inspeccion_id,edad_construccion,elevacion,sector,direccion,isDeleted)  VALUES (?,?,?,?,?,?,?)", [id,inspeccion_id,edad_construccion,elevacion,sector,direccion,isDeleted]);
+        "INSERT OR REPLACE INTO Vivienda (id, inspeccion_id,edad_construccion,elevacion,sector,direccion,ubicacion,isDeleted)  VALUES (?,?,?,?,?,?,?,?)", [id,inspeccion_id,edad_construccion,elevacion,sector,direccion,ubicacion,isDeleted]);
     return id;
   }
 
@@ -162,7 +165,7 @@ class Vivienda {
   /// <returns> Returns a <List<BoolResult>> </returns>
   Future<List<BoolResult>> upsertAll(List<Vivienda> viviendas) async {
     var results = await _mnVivienda.rawInsertAll(
-        "INSERT OR REPLACE INTO Vivienda (id, inspeccion_id,edad_construccion,elevacion,sector,direccion,isDeleted)  VALUES (?,?,?,?,?,?,?)", viviendas);
+        "INSERT OR REPLACE INTO Vivienda (id, inspeccion_id,edad_construccion,elevacion,sector,direccion,ubicacion,isDeleted)  VALUES (?,?,?,?,?,?,?,?)", viviendas);
     return results;
   }
 
@@ -173,7 +176,7 @@ class Vivienda {
   /// <returns>Returns a new Primary Key value of Vivienda</returns>
   Future<int> saveAs() async {
     id = await _mnVivienda.insert(
-        Vivienda.withFields(inspeccion_id,edad_construccion,elevacion,sector,direccion,isDeleted));
+        Vivienda.withFields(inspeccion_id,edad_construccion,elevacion,sector,direccion,ubicacion,isDeleted));
     return id;
   }
 
@@ -223,6 +226,7 @@ class Vivienda {
     if(elevacion==null) elevacion=null;
     if(sector==null) sector="";
     if(direccion==null) direccion="";
+    if(ubicacion==null) ubicacion="";
     if(isDeleted==null) isDeleted=false;
   }
 //end methods
@@ -561,6 +565,11 @@ class ViviendaFilterBuilder extends SearchCriteria {
     _direccion = setField(_direccion, "direccion", DbType.text);
     return _direccion;
   }
+  ViviendaField _ubicacion;
+  ViviendaField get ubicacion {
+    _ubicacion = setField(_ubicacion, "ubicacion", DbType.text);
+    return _ubicacion;
+  }
   ViviendaField _isDeleted;
   ViviendaField get isDeleted {
     _isDeleted = setField(_isDeleted, "isDeleted", DbType.bool);
@@ -768,6 +777,11 @@ class ViviendaFields {
   static TableField get direccion {
     _fDireccion = SqlSyntax.setField(_fDireccion, "direccion", DbType.text);
     return _fDireccion;
+  }
+  static TableField _fUbicacion;
+  static TableField get ubicacion {
+    _fUbicacion = SqlSyntax.setField(_fUbicacion, "ubicacion", DbType.text);
+    return _fUbicacion;
   }
   static TableField _fIsDeleted;
   static TableField get isDeleted {
@@ -3152,7 +3166,7 @@ class Variable {
     this.nombre = o["nombre"];
     this.obligatoria = o["obligatoria"] != null ? (o["obligatoria"] == 1 || o["obligatoria"] == true) : null;
     this.activo = o["activo"] != null ? (o["activo"] == 1 || o["activo"] == true) : null;
-    this.SeccionId = o["seccion"];
+    this.SeccionId = o["seccion_variable"];
     this.isDeleted = !this.activo;//o["isDeleted"] != null ? o["isDeleted"] == 1 : null;
   }
 
@@ -3935,7 +3949,7 @@ class Itemvariable {
     this.nombre = o["nombre"];
     this.tipo = o["tipo"];
     this.activo = o["activo"] != null ? (o["activo"] == 1 || o["activo"] == true) : null;
-    this.VariableId = o["variable"];
+    this.VariableId = o["variable_item"];
     this.isDeleted = !this.activo;//o["isDeleted"] != null ? o["isDeleted"] == 1 : null;
   }
 
@@ -4725,7 +4739,7 @@ class Opcion {
     this.id = o["id"];
     this.nombre = o["nombre"];
     this.activo = o["activo"] != null ? (o["activo"] == 1 || o["activo"] == true) : null;
-    this.ItemVariableId = o["item"];
+    this.ItemVariableId = o["item_opcion"];
     this.isDeleted = !this.activo;//o["isDeleted"] != null ? o["isDeleted"] == 1 : null;
   }
 

@@ -129,21 +129,20 @@ class _SincronizacionPageState extends State<SincronizacionPage> {
         //debugPrint(json);
 
         String response= await _submitToServer(json, anexos);
-        if(response !=null){
-          results[vivienda]= response;
+        results[vivienda]= response;
+        if(response == "OK"){
+          //results[vivienda]= response;
           ficha.estado= "Enviada";
           ficha.save();
           //Map<String,dynamic> update= new Map<String,dynamic>();
           //update["estado"]= "ENVIADA";
 
         }
-        else{
-        }
 
       }
       print("OUT OF FUNCTION");
       waitingDialog.hide();
-      String message= "Process was completed successfuly with these results:\n\n";
+      String message= "Process was completed with these results:\n\n";
       for(Vivienda v in results.keys){
         if(results[v] == "OK")
           message+= "Form ${v.inspeccion_id} has been submited to server.\n\n";
@@ -152,7 +151,7 @@ class _SincronizacionPageState extends State<SincronizacionPage> {
         else if(results[v] == "PARSING_ERROR")
           message+= "Form ${v.inspeccion_id} had an unexpected error. Please check your form.\n\n";
       }
-      resultAlert= _buildAlertWidget("Forms synced", message,type: AlertType.success);
+      resultAlert= _buildAlertWidget("Sync process finished", message,type: AlertType.info);
       resultAlert.show();
     /*await Future.delayed(Duration(seconds: 5));
     if(waitingDialog.isShowing())
@@ -206,7 +205,7 @@ class _SincronizacionPageState extends State<SincronizacionPage> {
       respuestaMap.remove("activo");
       respuestaMap.remove("FichaId");
       respuestaMap.remove("isDeleted");
-      respuestaMap["item"]= respuestaMap.remove("ItemVariableId");
+      respuestaMap["item_respuesta"]= respuestaMap.remove("ItemVariableId");
 
       bool gotItemData=false;
       Itemvariable item;
@@ -271,7 +270,7 @@ class _SincronizacionPageState extends State<SincronizacionPage> {
         resptMap.remove("id");
         resptMap.remove("RespuestaId");
         resptMap.remove("isDeleted");
-        resptMap["opcion"]= resptMap.remove("OpcionId");
+        resptMap["opcion_respuestasimple"]= resptMap.remove("OpcionId");
 
         respuestaMap["RespuestaOpcionSimple"]= [resptMap];
       }
@@ -314,7 +313,7 @@ class _SincronizacionPageState extends State<SincronizacionPage> {
           opresMap.remove("id");
           opresMap.remove("RespuestaOpcionMultipleId");
           opresMap.remove("isDeleted");
-          opresMap["opcion"]= opresMap.remove("OpcionId");
+          opresMap["opcion_respuesta"]= opresMap.remove("OpcionId");
           opresMapList.add(opresMap);
         }
 
@@ -329,6 +328,7 @@ class _SincronizacionPageState extends State<SincronizacionPage> {
 
     JsonEncoder encoder= JsonEncoder.withIndent(" ");
     String json= encoder.convert(fichaMap);
+    debugPrint(json);
     return json;
   }
 

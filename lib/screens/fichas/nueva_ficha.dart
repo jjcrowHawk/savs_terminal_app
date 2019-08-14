@@ -244,7 +244,8 @@ class _NuevaFichaPageState extends State<NuevaFichaPage> {
     vivienda.edad_construccion= int.tryParse(infoPage.bageController.text);
     vivienda.elevacion= double.tryParse(infoPage.elevationController.text);
     vivienda.sector= infoPage.sectorController.text;
-    vivienda.direccion= infoPage.addressController.text;
+    vivienda.direccion= infoPage.locationController.text;
+    vivienda.ubicacion= infoPage.addressController.text;
     int viviendaId=  await vivienda.save();
     print("THIS NEW VIVIENDA: ${vivienda.toMap()}");
     if(viviendaId <=0){
@@ -313,7 +314,6 @@ class _NuevaFichaPageState extends State<NuevaFichaPage> {
                   res.ItemVariableId= itemWidget.item.id;
                   res.FichaId= idFicha;
 
-                  //print("AIUUUUUUUUDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA :'V  ");
 
                   print("${itemWidget.item.nombre} - ${itemWidget.item.tipo}");
                   print("${itemWidget.item.tipo == "Texto" ? "ES TEXTO" : "" }");
@@ -392,7 +392,7 @@ class _NuevaFichaPageState extends State<NuevaFichaPage> {
     waitingDialog.hide();
     Alert successAlert= new Alert(
       title: "Form saved",
-      desc: "Your form with id $idFicha was successfuly saved",
+      desc: "Your form with id ${vivienda.inspeccion_id} was successfuly saved",
       type: AlertType.success,
       context: context,
       buttons: [
